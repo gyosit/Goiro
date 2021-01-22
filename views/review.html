@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+  <body>
+    {{range.rooms}}
+    {{if ne .Black .White}}
+    <ul>
+      <li>{{.Name}} {{if ne .Status 0}}<a href="./playreview/{{.Hash}}">[検討]</a>{{end}}<br>
+        {{.Size}}路盤/コミ{{.Komi}}目/ハンデ{{.Hande}}目<br>
+        ●{{.Black}}/○{{.White}}</li>
+    </ul>
+    {{end}}
+    {{end}}
+  </body>
+</html>

@@ -1,0 +1,1 @@
+echo -e "\nloadsgf test.sgf\ninitial_influence white influence_regions" | gnugo --mode gtp > res.txt

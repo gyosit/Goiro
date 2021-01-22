@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+  <body>
+    {{range.rooms}}
+    <ul>
+      <li>{{.Name}} {{if eq .Status 0}}<a href="./goto?room={{.Hash}}">[対局申し込み]</a>{{end}}<br>
+        {{.Size}}路盤/コミ{{.Komi}}目/ハンデ{{.Hande}}目<br>
+        ●{{.Black}}/○{{.White}} <br>
+        By {{.Owner}}</li>
+    </ul>
+    {{end}}
+  </body>
+</html>
