@@ -43,6 +43,7 @@ type User struct{
 
 type Play struct{
 	gorm.Model
+	Birth string
 	Name string `form:"name"`
 	Hash string
 	Password string `form:"pass"`
@@ -593,26 +594,30 @@ func main() {
 				*count--
 			}(&count)
 		case "forward":
-			turn[hash] = editKifu(hash, 1)
-			board := ex_gnugo.ShowBoard(hash)
-			sendClient(m, s, "board:"+board, true)
-			go func(count *int){
-				*count++
-				time.Sleep(time.Second * 1)
-				if *count < 2{
-					board := ex_gnugo.ShowInfluence(hash, turn[hash], room.Size)
-					sendClient(m, s, "board:"+board, true)
-					score := ex_gnugo.EstimateScore(hash)
-					sendClient(m, s, "score:"+score, true)
-				}
-				*count--
-			}(&count)
+			if _, err := os.Stat(head+hash+"tmp"+tail); err == nil{
+				turn[hash] = editKifu(hash, 1)
+				board := ex_gnugo.ShowBoard(hash)
+				sendClient(m, s, "board:"+board, true)
+				go func(count *int){
+					*count++
+					time.Sleep(time.Second * 1)
+					if *count < 2{
+						board := ex_gnugo.ShowInfluence(hash, turn[hash], room.Size)
+						sendClient(m, s, "board:"+board, true)
+						score := ex_gnugo.EstimateScore(hash)
+						sendClient(m, s, "score:"+score, true)
+					}
+					*count--
+				}(&count)
+			}
 		case "resume":
 			turn[hash] = resumeKifu(hash)
 			board := ex_gnugo.ShowInfluence(hash, turn[hash], room.Size)
 			sendClient(m, s, "board:"+board, true)
 			score := ex_gnugo.EstimateScore(hash)
 			sendClient(m, s, "score:"+score, true)
+		case "override":
+			turn[hash] = overrideKifu(hash)
 		case "head":
 			copyFile(hash, "tmp")
 			turn[hash] = editKifu(hash, -100)
@@ -663,12 +668,14 @@ func createRoom(play Play) (string, []error){
 	defer db.Close()
 	t := time.Now()
 	layout := "Jan 2, 2006 at 3:04pm (MST)"
+	layout2 := "2006/01/02 15:04"
 	str_t := t.Format(layout) + play.Owner
 	hash_t, _ := crypto.PasswordEncrypt(str_t)
 	hash_t = strings.Replace(hash_t, "/", "S", -1)
 	hash_t = strings.Replace(hash_t, ".", "_", -1)
 	hash_t = strings.Replace(hash_t, "$", "D", -1)
 	play.Hash = hash_t
+	play.Birth = t.Format(layout2)
 
 	if err := db.Create(&play).GetErrors(); len(err)!=0{
 		fmt.Println(err)
@@ -734,6 +741,9 @@ func getMyRooms(user string) []Play{
 	var rooms []Play
 	db.Where("black = ? OR white = ?", user, user).Find(&rooms)
 	db.Close()
+	for i, j:= 0, len(rooms)-1; i<j; i, j = i+1, j-1 {
+		rooms[i], rooms[j] = rooms[j], rooms[i]
+	}
 	return rooms
 }
 
@@ -978,6 +988,41 @@ func resumeKifu(hash string) int{
 		os.Remove(head+hash+"tmptmp"+tail)
 		os.Remove(head+hash+tail)
 		os.Rename(head+hash+"_"+tail, head+hash+tail)
+	}
+
+	src, err := os.Open(head+hash+tail) // 元ファイル
+	if err != nil {
+			panic(err)
+	}
+	defer src.Close()
+	c, err := ioutil.ReadAll(src); if err != nil{
+		fmt.Printf("Error")
+	}
+	
+	slice_ := strings.Split(string(c), ";")
+	l := len(slice_)
+	switch(string(slice_[l-1][0])){
+	case "B":
+		turn = -1
+	case "W":
+		turn = 1
+	}
+	fmt.Printf("turn is :\n")
+	fmt.Println(turn)
+	fmt.Printf("\n")
+	return turn
+}
+
+func overrideKifu(hash string) int{
+	head := "./assets/kifu/"
+	tail := ".sgf"
+	var turn int
+	if _, err := os.Stat(head+hash+"tmp"+tail); err == nil{
+		os.Remove(head+hash+"tmp"+tail)
+		os.Remove(head+hash+"_"+tail)
+		if _, err := os.Stat(head+hash+"tmptmp"+tail); err == nil{
+			os.Remove(head+hash+"tmptmp"+tail)
+		}
 	}
 
 	src, err := os.Open(head+hash+tail) // 元ファイル

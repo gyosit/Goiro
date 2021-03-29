@@ -11,8 +11,8 @@
     {{.username}}　さん <a href="logout">ログアウト</a>
   {{end}}
 
-  <form name="create_room" method="POST" action="/create_room">
-    <h2>部屋の作成</h2>
+  <form name="create_room" method="POST" action="/">
+    <h2><s>対人戦</s> (COMING SOON!)</h2>
     <tr>
       <td align="right">部屋の名前(任意)</td>
       <td><input type="text" name="name"></td>
@@ -45,11 +45,12 @@
       <td align="right">ハンデ(黒が置く石の数) 2～9</td>
       <td><input id="hande" type="number" name="hande" value=0 max=9 step=1 onchange="k()"></td>
     </tr><br>
-    <input type="submit" value="部屋を作成">
+    <!-- <input type="submit" value="部屋を作成"> -->
   </form>
 
   <form name="AI_room" method="POST" action="/ai_room">
     <h2>AI対戦</h2>
+    AI (15級～10級相当のコンピュータと対戦ができます) <br>
     <tr>
       <td align="right">盤のサイズ</td>
       <td><select name="size">
@@ -79,6 +80,7 @@
 
   <form name="free_room" method="POST" action="/free_room">
     <h2>自由碁盤</h2>
+    碁盤に石を並べて検討を行うことができます <br>
     <tr>
       <td align="right">盤のサイズ</td>
       <td><select name="size">
@@ -97,12 +99,12 @@
       <td align="right">ハンデ(黒が置く石の数) 2～9</td>
       <td><input id="hande_ai" type="number" name="hande" value=0 max=9 step=1 onchange="k_ai()"></td>
     </tr><br>
-    <input type="submit" value="AI対戦">
+    <input type="submit" value="碁盤を出す">
   </form>
 
   <a href="/review">検討</a>
 
-  <!-- form name="go_room" method="POST" action="/create_room">
+  <!-- form name="go_room" method="POST" action="/">
     <h2>自動申請</h2>
     ハンデなしの設定した条件に一致する部屋に申し込みます。 <br>
     <tr>

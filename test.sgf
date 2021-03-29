@@ -1,8 +1,17 @@
-(;GM[1]FF[4]
-SZ[19]
-GN[GNU Go 3.8 load and print]
-DT[2020-08-11]
-KM[0.0]HA[0]RU[Japanese]AP[GNU Go:3.8]AW[qq]
-AB[hb]
-PL[B]
-)
+document.getElementById("pass").onclick = function() {
+  socket.send("pass "+1);
+}
+document.getElementById("back").onclick = function() {
+  socket.send("back");
+}
+document.getElementById("forward").onclick = function() {
+  socket.send("forward");
+}
+document.getElementById("resume").onclick = function() {
+  socket.send("resume");
+}
+document.getElementById("head").onclick = function() {
+  socket.send("head");
+}
+document.getElementById("end").onclick = function() {
+  socket.send("end");

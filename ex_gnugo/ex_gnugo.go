@@ -236,11 +236,11 @@ func parseBoard(boards []string) string{
 	size := len(boards)
 	boards = boards[4:size-3]
 	var res []string
-	size_tmp := len(strings.Split(boards[0], " "))
+	size_tmp := len(boards)
 	for _, v := range boards{
 		v = strings.TrimSpace(v)
 		tmp := strings.Split(v, " ")
-		tmp = tmp[1:size_tmp-1]
+		tmp = tmp[1:size_tmp+1]
 		fmt.Println(tmp)
 		res = append(res, strings.Join(tmp, ","))
 	}
