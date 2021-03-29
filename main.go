@@ -18,6 +18,7 @@ import (
 		"./ex_gnugo"
 		"./sessionmanager"
 		"net/http"
+		"net/http/fcgi"
 		"github.com/gin-gonic/gin"
 		"github.com/gin-contrib/sessions"
 		"github.com/gin-contrib/sessions/cookie"
@@ -71,6 +72,10 @@ type playerKeys struct{
 var LoginInfo SessionInfo
 
 func main() {
+	l, _ := net.Listen("tcp", ":80")
+	http.HandleFunc("/", handler)
+	fcgi.Serve(l, nil)
+
 	dbInit()
 
 	router := gin.Default()
