@@ -18,7 +18,8 @@ import (
 		"./ex_gnugo"
 		"./sessionmanager"
 		"net/http"
-		"net/http/fcgi"
+		//"net"
+		//"net/http/fcgi"
 		"github.com/gin-gonic/gin"
 		"github.com/gin-contrib/sessions"
 		"github.com/gin-contrib/sessions/cookie"
@@ -72,14 +73,12 @@ type playerKeys struct{
 var LoginInfo SessionInfo
 
 func main() {
-	l, _ := net.Listen("tcp", ":80")
-	http.HandleFunc("/", handler)
-	fcgi.Serve(l, nil)
-
 	dbInit()
 
 	router := gin.Default()
 	m := melody.New()
+	//"l, _ := net.Listen("tcp", ":1780")
+	//"fcgi.Serve(l, router)
 
 	store := cookie.NewStore([]byte("secret"))
 	router.Use(sessions.Sessions("mysession", store))
@@ -641,7 +640,7 @@ func main() {
 		sendClient(m, s, "turn:"+last, true)
 	})
 
-	router.Run("localhost:8080")
+	router.Run(":1780")
 }
 
 func execDB(db *sql.DB, q string){
