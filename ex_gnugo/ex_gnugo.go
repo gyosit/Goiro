@@ -11,10 +11,11 @@ import (
 )
 
 func integralCmd(cmds []string) string{
+	fmt.Printf("===EXE===\n")
 	var res string
 	for _, cmd := range cmds{
 		fmt.Printf(cmd+"\n")
-		res += (cmd + "\\n")
+		res += (cmd + "\n")
 	}
 	return res
 }
@@ -22,7 +23,7 @@ func integralCmd(cmds []string) string{
 func ExecCommand(order string) []string{
 	var res []string
 	//cmd := "loadsgf test.sgf\\ninitial_influence white influence_regions"
-	cmd := "echo \"\\n" + order + "\" | gnugo --mode gtp"
+	cmd := "echo \"\n" + order + "\" | gnugo --mode gtp"
 	out, _ := exec.Command("sh", "-c", cmd).Output()
 	s := string(out)
 	slice := strings.Split(s, "\n")
