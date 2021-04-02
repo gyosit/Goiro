@@ -50,17 +50,13 @@ func PlayStone(hash string, color int, i int, size int, ai int) (string,string,s
 
 	point_gnugo := TransCoordinate(i, size, true)
 	cmds := []string{"loadsgf ./assets/kifu/"+hash+".sgf",
-										"play "+s_color[color]+" "+point_gnugo,
-										"estimate_score",
-										"initial_influence "+s_color[color*(-1)]+" influence_regions"}
+										"play "+s_color[color]+" "+point_gnugo}
 	cmd := integralCmd(cmds)
 	res := ExecCommand(cmd)
 	if res[2] != "? illegal move" {
 		point := TransCoordinate(i, size, false)
-		score := res[4]
-		influence := parseBoard2(res[6:7+size])
 		uploadKifu(s_color[color], point, hash)
-		return "Regal", score, influence, "best"
+		return "Regal", "", "", "best"
 	}else{
 		return "Illegal", "", "", ""
 	}
@@ -205,9 +201,9 @@ func ShowInfluence(hash string, color int, size int) string{
 	var s_color string
 	switch color{
 	case 1:
-		s_color = "white"
-	case -1:
 		s_color = "black"
+	case -1:
+		s_color = "white"
 	}
 	cmds := []string{"loadsgf ./assets/kifu/"+hash+".sgf",
 									"initial_influence "+s_color+" influence_regions"}

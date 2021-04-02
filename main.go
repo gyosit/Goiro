@@ -17,6 +17,7 @@ import (
 		"./crypto"
 		"./ex_gnugo"
 		"./sessionmanager"
+		"./secure"
 		"net/http"
 		//"net"
 		//"net/http/fcgi"
@@ -88,7 +89,7 @@ func main() {
 	turn := make(map[string]int)
 	player := make(map[playerKeys]string)
 	pass := make(map[string]int)
-	var count int
+	count := make(map[string]int)
 
 	// Session
 	//store := cookie.NewStore([]byte("secret"))
@@ -190,6 +191,7 @@ func main() {
 				turn[new_hash] = -1
 			}
 			pass[new_hash] = 0
+			copyFile(new_hash, "tmp")
 
 			ctx.HTML(http.StatusOK, "play.html", gin.H{"mode": mode, "user": user, "size": size})
 		}
@@ -414,9 +416,21 @@ func main() {
 		_, err := os.Stat(head+hash+"_"+user+tail); if err == nil{
 			senrigan = true
 			hash = hash + "_" + user
+			pass[hash] = 0
 			switch parse[0]{
 			case "coordinate_ai":
 				parse[0] = "coordinate"
+			case "pass_ai":
+				parse[0] = "pass"
+			case "resign":
+				parse[0] = ""
+			}
+		}
+		_, err = os.Stat(head+hash+"_"+tail); if err == nil{
+			pass[hash] = 0
+			switch parse[0]{
+			case "resign":
+				parse[0] = ""
 			}
 		}
 		fmt.Println(hash)
@@ -432,13 +446,16 @@ func main() {
 				}
 			}
 			i, _ := strconv.Atoi(parse[1])
-			res, score, board, _ := ex_gnugo.PlayStone(hash, turn[hash], i, room.Size, 0)
+			res, _, _, _ := ex_gnugo.PlayStone(hash, turn[hash], i, room.Size, 0)	
 			if res != "Illegal"{
 				turn[hash] *= -1
 				pass[hash] = 0
-				sendClient(m, s, "board:"+board, true)
-				sendClient(m, s, "score:"+score, true)
+				
 			}
+			board := ex_gnugo.ShowInfluence(hash, turn[hash], room.Size)
+			sendClient(m, s, "board:"+board, true)
+			score := ex_gnugo.EstimateScore(hash)
+			sendClient(m, s, "score:"+score, true)
 			if _, err := os.Stat(head+hash+"tmp"+tail); err == nil{
 				copyFile(hash, "tmptmp")
 			}
@@ -448,13 +465,13 @@ func main() {
 			}
 			i, _ := strconv.Atoi(parse[1])
 			level, _ := strconv.Atoi(parse[2])
-			res, score, board, _ := ex_gnugo.PlayStone(hash, turn[hash], i, room.Size, level)
+			res, _, _, _ := ex_gnugo.PlayStone(hash, turn[hash], i, room.Size, level)
+			board := ex_gnugo.ShowBoard(hash)
 			if res != "Illegal"{
 				pass[hash] = 0
 				c_b, c_w := ex_gnugo.CapturedStone(hash)
 				sendClient(m, s, "board:"+board, true)
 				sendClient(m, s, "captured:"+c_b+","+c_w, true)
-				sendClient(m, s, "score:"+score, true)
 				last := ex_gnugo.CheckTurn(hash, room.Size)
 				sendClient(m, s, "turn:"+last, true)
 				score, board, best := ex_gnugo.Genmove(hash, turn[hash], i, room.Size, level)
@@ -486,6 +503,11 @@ func main() {
 			if user != player[playerKeys{hash, turn[hash]}]{
 				break
 			}
+			if _, err := os.Stat(head+hash+"tmp"+tail); err == nil{
+				if _, err := os.Stat(head+hash+"_"+tail); err != nil{
+					copyFile(hash, "_")
+				}
+			}
 			sendClient(m, s, "pass", true)
 			pass[hash]++
 			ex_gnugo.Pass(hash, turn[hash], room.Size, 0)
@@ -501,6 +523,9 @@ func main() {
 			}else{
 				score =  ex_gnugo.EstimateScore(hash)
 				sendClient(m, s, "score:"+score, true)
+			}
+			if _, err := os.Stat(head+hash+"tmp"+tail); err == nil{
+				copyFile(hash, "tmptmp")
 			}
 		case "pass_ai":
 			if user != player[playerKeys{hash, turn[hash]}]{
@@ -586,33 +611,37 @@ func main() {
 			turn[hash] = editKifu(hash, -1)
 			board := ex_gnugo.ShowBoard(hash)
 			sendClient(m, s, "board:"+board, true)
-			go func(count *int){
-				*count++
+			go func(){
+				count[hash]++
 				time.Sleep(time.Second * 1)
-				if *count < 2{
-					board := ex_gnugo.ShowInfluence(hash, turn[hash], room.Size)
-					sendClient(m, s, "board:"+board, true)
+				if count[hash] < 2{
 					score := ex_gnugo.EstimateScore(hash)
 					sendClient(m, s, "score:"+score, true)
+					board := ex_gnugo.ShowInfluence(hash, turn[hash], room.Size)
+					sendClient(m, s, "board:"+board, true)
+					last := ex_gnugo.CheckTurn(hash, room.Size)
+					sendClient(m, s, "turn:"+last, true)
 				}
-				*count--
-			}(&count)
+				count[hash]--
+			}()
 		case "forward":
 			if _, err := os.Stat(head+hash+"tmp"+tail); err == nil{
 				turn[hash] = editKifu(hash, 1)
 				board := ex_gnugo.ShowBoard(hash)
 				sendClient(m, s, "board:"+board, true)
-				go func(count *int){
-					*count++
+				go func(){
+					count[hash]++
 					time.Sleep(time.Second * 1)
-					if *count < 2{
-						board := ex_gnugo.ShowInfluence(hash, turn[hash], room.Size)
-						sendClient(m, s, "board:"+board, true)
+					if count[hash] < 2{
 						score := ex_gnugo.EstimateScore(hash)
 						sendClient(m, s, "score:"+score, true)
+						board := ex_gnugo.ShowInfluence(hash, turn[hash], room.Size)
+						sendClient(m, s, "board:"+board, true)
+						last := ex_gnugo.CheckTurn(hash, room.Size)
+						sendClient(m, s, "turn:"+last, true)
 					}
-					*count--
-				}(&count)
+					count[hash]--
+				}()
 			}
 		case "resume":
 			turn[hash] = resumeKifu(hash)
@@ -795,10 +824,7 @@ func applyPlay(hash, challanger, how_turn string) Play{
 }
 
 func gormConnect() *gorm.DB{
-	DBMS := "mysql"
-	USER := "igo"
-	PASS := "Ss4071132019_igo"
-	DBNAME := "igo?parseTime=true"
+	DBMS, USER, PASS, DBNAME := secure.Init()
 
 	CONNECT := USER + ":" + PASS + "@" + "/" + DBNAME
 	db, err := gorm.Open(DBMS, CONNECT)
