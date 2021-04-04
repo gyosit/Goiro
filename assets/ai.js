@@ -2,6 +2,7 @@
  *** Functions *** 
  ***           ***/
 var margin = 100;
+var SIDE = 703;
 
 function detectXY(x, y, size, board_size){
   var xmin = 1e9;
@@ -28,7 +29,7 @@ function detectXY(x, y, size, board_size){
 }
 
 function initGoban(app, size, texture, sengigan){
-  var ds = size/(603-1);
+  var ds = size/(SIDE-1);
   console.log(size);
   var stars = [];
   if (size == 9){
@@ -49,7 +50,7 @@ function initGoban(app, size, texture, sengigan){
   }
 
   let gobanSprite = new PIXI.Graphics();
-  let clickarea = new PIXI.Rectangle(0, 0, 603+margin, 603+margin);
+  let clickarea = new PIXI.Rectangle(0, 0, SIDE+margin, SIDE+margin);
   gobanSprite.interactive = true;
   gobanSprite.hitArea = clickarea;
   gobanSprite.on('pointertap', putStone);
@@ -58,14 +59,14 @@ function initGoban(app, size, texture, sengigan){
   texture["board"].push(gobanSprite);
 
   var line = new PIXI.Graphics();
-  var gap = 603/(size-1);
+  var gap = SIDE/(size-1);
   for(var i=0;i<size;i++){
-    line.lineStyle(2, line_color).moveTo(margin/2, gap*i+margin/2).lineTo(603+margin/2, gap*i+margin/2);
+    line.lineStyle(2, line_color).moveTo(margin/2, gap*i+margin/2).lineTo(SIDE+margin/2, gap*i+margin/2);
     app.stage.addChildAt(line, 0);
     texture["board"].push(line);
   }
   for(var i=0;i<size;i++){
-    line.lineStyle(2, line_color).moveTo(gap*i+margin/2, margin/2).lineTo(gap*i+margin/2, 603+margin/2);
+    line.lineStyle(2, line_color).moveTo(gap*i+margin/2, margin/2).lineTo(gap*i+margin/2, SIDE+margin/2);
     app.stage.addChildAt(line, 0);
     texture["board"].push(line);
   }
@@ -100,7 +101,7 @@ function initGoban(app, size, texture, sengigan){
 
   let back = new PIXI.Graphics();
   back.beginFill(board_color);
-  back.drawRect(0, 0, 603+margin, 603+margin);
+  back.drawRect(0, 0, SIDE+margin, SIDE+margin);
   back.endFill();
   app.stage.addChildAt(back, 0);
   texture["board"].push(back);
@@ -244,7 +245,7 @@ function deleteImage(texture, type){
 
 function putStone(e) {
   let position = e.data.getLocalPosition(app.stage);
-  let {x, y} = detectXY(position.x, position.y, 603, board_size);
+  let {x, y} = detectXY(position.x, position.y, SIDE, board_size);
   socket.send("coordinate_ai"+" "+(x+100*y)+" "+1);
 }
 
@@ -252,7 +253,7 @@ function huntDragon(e) {
   times++;
   if(times % 10 == 0){
     let position = e.data.getLocalPosition(app.stage);
-    let {x, y} = detectXY(position.x, position.y, 603, board_size);
+    let {x, y} = detectXY(position.x, position.y, SIDE, board_size);
     socket.send("dragon "+(x+100*y));
   }
 }
@@ -275,8 +276,8 @@ document.getElementById("senrigan").onclick = function() {
 /***      ***
  *** Main *** 
  ***      ***/
-let score = new PIXI.Application({width: 603+margin, height: 10});
-let app = new PIXI.Application({width: 603+margin, height: 603+margin});
+let score = new PIXI.Application({width: SIDE+margin, height: 10});
+let app = new PIXI.Application({width: SIDE+margin, height: SIDE+margin});
 
 var url = "ws://" + window.location.host + ":1780" + window.location.pathname + "/ws";
 var socket = new WebSocket(url);
@@ -335,22 +336,22 @@ socket.onmessage = function(msg){
       var white_t = 0x87ceeb;
       switch(v){
         case "-3":
-          makeImage(x, y, app, black_t, "territory", 0.2, 603, board_size);
+          makeImage(x, y, app, black_t, "territory", 0.2, SIDE, board_size);
           break;
         case "-2":
-          makeImage(x, y, app, black_t, "territory", 0.1, 603, board_size);
+          makeImage(x, y, app, black_t, "territory", 0.1, SIDE, board_size);
           break;
         case "-1":
-          makeImage(x, y, app, black_t, "territory", 0.05, 603, board_size);
+          makeImage(x, y, app, black_t, "territory", 0.05, SIDE, board_size);
           break;
         case "3":
-          makeImage(x, y, app, white_t, "territory", 0.2, 603, board_size);
+          makeImage(x, y, app, white_t, "territory", 0.2, SIDE, board_size);
           break;
         case "2":
-          makeImage(x, y, app, white_t, "territory", 0.1, 603, board_size);
+          makeImage(x, y, app, white_t, "territory", 0.1, SIDE, board_size);
           break;
         case "1":
-          makeImage(x, y, app, white_t, "territory", 0.05, 603, board_size);
+          makeImage(x, y, app, white_t, "territory", 0.05, SIDE, board_size);
           break;
         default:
           break;
@@ -369,10 +370,10 @@ socket.onmessage = function(msg){
       var white_s = 0xffffff;
       switch(v){
         case "-4":
-          makeImage(x, y, app, black_s, "stone", 1, 603, board_size);
+          makeImage(x, y, app, black_s, "stone", 1, SIDE, board_size);
           break;
         case "4":
-          makeImage(x, y, app, white_s, "stone", 1, 603, board_size);
+          makeImage(x, y, app, white_s, "stone", 1, SIDE, board_size);
           break;
         default:
           break;
@@ -394,11 +395,11 @@ socket.onmessage = function(msg){
         switch(v){
           case "-4":
             link_color = black_s;
-            makeImage(x, y, app, link_color, "link1", 1, 603, board_size);
+            makeImage(x, y, app, link_color, "link1", 1, SIDE, board_size);
             break;
           case "4":
             link_color = white_s;
-            makeImage(x, y, app, link_color, "link1", 1, 603, board_size);
+            makeImage(x, y, app, link_color, "link1", 1, SIDE, board_size);
             break;
         }
       }
@@ -406,11 +407,11 @@ socket.onmessage = function(msg){
         switch(v){
           case "-4":
             link_color = black_s;
-            makeImage(x, y, app, link_color, "link2", 1, 603, board_size);
+            makeImage(x, y, app, link_color, "link2", 1, SIDE, board_size);
             break;
           case "4":
             link_color = white_s;
-            makeImage(x, y, app, link_color, "link2", 1, 603, board_size);
+            makeImage(x, y, app, link_color, "link2", 1, SIDE, board_size);
             break;
         }
       }
@@ -418,11 +419,11 @@ socket.onmessage = function(msg){
         switch(v){
           case "-4":
             link_color = black_s;
-            makeImage(x, y, app, link_color, "link3", 1, 603, board_size);
+            makeImage(x, y, app, link_color, "link3", 1, SIDE, board_size);
             break;
           case "4":
             link_color = white_s;
-            makeImage(x, y, app, link_color, "link3", 1, 603, board_size);
+            makeImage(x, y, app, link_color, "link3", 1, SIDE, board_size);
             break;
         }
       }
@@ -430,11 +431,11 @@ socket.onmessage = function(msg){
         switch(v){
           case "-4":
             link_color = black_s;
-            makeImage(x, y, app, link_color, "link4", 1, 603, board_size);
+            makeImage(x, y, app, link_color, "link4", 1, SIDE, board_size);
             break;
           case "4":
             link_color = white_s;
-            makeImage(x, y, app, link_color, "link4", 1, 603, board_size);
+            makeImage(x, y, app, link_color, "link4", 1, SIDE, board_size);
             break;
         }
       }
@@ -455,7 +456,7 @@ socket.onmessage = function(msg){
     obj.forEach(v => {
       y = Math.floor(v / 100);
       x = v - y*100;
-      makeImage(x, y, app, 0xff0000, "bless", 1, 603, board_size);
+      makeImage(x, y, app, 0xff0000, "bless", 1, SIDE, board_size);
     })
     break;
   case "score":
@@ -466,7 +467,7 @@ socket.onmessage = function(msg){
     if(obj[0]=="W"){
       obj[1] *= -1;
     }
-    var boudary = (603+margin)/2 - obj[1]*15;
+    var boudary = (SIDE+margin)/2 - obj[1]*15;
     var w_bar = new PIXI.Graphics()
       .beginFill(w_ter)
       .drawPolygon([
@@ -480,8 +481,8 @@ socket.onmessage = function(msg){
     .beginFill(b_ter)
     .drawPolygon([
       boudary, 0,
-      603+margin, 0,
-      603+margin, 100,
+      SIDE+margin, 0,
+      SIDE+margin, 100,
       boudary, 100
     ])
   .endFill();
@@ -497,7 +498,7 @@ socket.onmessage = function(msg){
     if(obj[0]=="W"){
       obj[1] *= -1;
     }
-    var boudary = (603+margin)/2 - obj[1]*15;
+    var boudary = (SIDE+margin)/2 - obj[1]*15;
     var w_bar = new PIXI.Graphics()
       .beginFill(w_ter)
       .drawPolygon([
@@ -511,8 +512,8 @@ socket.onmessage = function(msg){
     .beginFill(b_ter)
     .drawPolygon([
       boudary, 0,
-      603+margin, 0,
-      603+margin, 100,
+      SIDE+margin, 0,
+      SIDE+margin, 100,
       boudary, 100
     ])
     .endFill();
@@ -540,7 +541,7 @@ socket.onmessage = function(msg){
     y = Math.floor(last_pos / 100);
     x = last_pos - y*100;
     deleteImage(texture, "last");
-    makeImage(x, y, app, 0xff0000, "last", 1, 603, board_size);
+    makeImage(x, y, app, 0xff0000, "last", 1, SIDE, board_size);
     break;
   case "player":
     obj = msg['data'].split(":")[1];
