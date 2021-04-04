@@ -3,6 +3,22 @@
 <head>
   <meta charset="utf-8">
   <title>Hello World</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style src="/assets/index.css"></style>
+  <style>
+    #submit {
+      color: #fff;
+      background-color: #eb6100;
+      border-radius: 100vh;
+    }
+    #submit:hover {
+      color: #fff;
+      background: #f56500;
+    } 
+    a.btn--radius {
+      border-radius: 50vh;
+    }
+  </style>
 </head>
 <body>
   {{if eq .username ""}}
@@ -77,7 +93,7 @@
       <td align="right">ハンデ(黒が置く石の数) 2～9</td>
       <td><input id="hande_ai" type="number" name="hande" value=0 max=9 step=1 onchange="k_ai()"></td>
     </tr><br>
-    <input type="submit" value="AI対戦">
+    <a id="submit" class="btn" href="javascript:AI_room.submit()">AI対戦</a>
   </form>
 
   <form name="free_room" method="POST" action="/free_room">
@@ -101,7 +117,7 @@
       <td align="right">ハンデ(黒が置く石の数) 2～9</td>
       <td><input id="hande_ai" type="number" name="hande" value=0 max=9 step=1 onchange="k_ai()"></td>
     </tr><br>
-    <input type="submit" value="碁盤を出す">
+    <a id="submit" class="btn" href="javascript:free_room.submit()">碁盤を出す</a>
   </form>
 
   {{end}}
