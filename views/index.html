@@ -8,9 +8,11 @@
   {{if eq .username ""}}
     <a href="regist">新規登録</a>　<a href="login">ログイン</a><br>
   {{else}}
-    {{.username}}　さん <a href="logout">ログアウト</a>
+    {{.username}}　さん <a href="/review">検討</a>
+			<a href="logout">ログアウト</a>
   {{end}}
 
+  {{if ne .username ""}}
   <form name="create_room" method="POST" action="/">
     <h2><s>対人戦</s> (COMING SOON!)</h2>
     <tr>
@@ -102,7 +104,7 @@
     <input type="submit" value="碁盤を出す">
   </form>
 
-  <a href="/review">検討</a>
+  {{end}}
 
   <!-- form name="go_room" method="POST" action="/">
     <h2>自動申請</h2>
