@@ -651,6 +651,7 @@ func main() {
 			sendClient(m, s, "score:"+score, true)
 		case "override":
 			turn[hash] = overrideKifu(hash)
+			copyFile(hash, "tmp")
 		case "head":
 			copyFile(hash, "tmp")
 			turn[hash] = editKifu(hash, -100)

@@ -278,7 +278,7 @@ document.getElementById("senrigan").onclick = function() {
 let score = new PIXI.Application({width: 603+margin, height: 10});
 let app = new PIXI.Application({width: 603+margin, height: 603+margin});
 
-var url = "ws://" + window.location.host + window.location.pathname + "/ws";
+var url = "ws://" + window.location.host + ":1780" + window.location.pathname + "/ws";
 var socket = new WebSocket(url);
 var black = "";
 var white = "";
