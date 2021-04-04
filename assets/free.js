@@ -2,7 +2,8 @@
  *** Functions *** 
  ***           ***/
  var margin = 100;
-
+ var SIDE = 703;
+ 
  function detectXY(x, y, size, board_size){
    var xmin = 1e9;
    var ymin = 1e9;
@@ -28,7 +29,7 @@
  }
  
  function initGoban(app, size, texture, sengigan){
-   var ds = size/(603-1);
+   var ds = size/(SIDE-1);
    console.log(size);
    var stars = [];
    if (size == 9){
@@ -49,7 +50,7 @@
    }
  
    let gobanSprite = new PIXI.Graphics();
-   let clickarea = new PIXI.Rectangle(0, 0, 603+margin, 603+margin);
+   let clickarea = new PIXI.Rectangle(0, 0, SIDE+margin, SIDE+margin);
    gobanSprite.interactive = true;
    gobanSprite.hitArea = clickarea;
    gobanSprite.on('pointertap', putStone);
@@ -58,14 +59,14 @@
    texture["board"].push(gobanSprite);
  
    var line = new PIXI.Graphics();
-   var gap = 603/(size-1);
+   var gap = SIDE/(size-1);
    for(var i=0;i<size;i++){
-     line.lineStyle(2, line_color).moveTo(margin/2, gap*i+margin/2).lineTo(603+margin/2, gap*i+margin/2);
+     line.lineStyle(2, line_color).moveTo(margin/2, gap*i+margin/2).lineTo(SIDE+margin/2, gap*i+margin/2);
      app.stage.addChildAt(line, 0);
      texture["board"].push(line);
    }
    for(var i=0;i<size;i++){
-     line.lineStyle(2, line_color).moveTo(gap*i+margin/2, margin/2).lineTo(gap*i+margin/2, 603+margin/2);
+     line.lineStyle(2, line_color).moveTo(gap*i+margin/2, margin/2).lineTo(gap*i+margin/2, SIDE+margin/2);
      app.stage.addChildAt(line, 0);
      texture["board"].push(line);
    }
@@ -96,48 +97,60 @@
      app.stage.addChildAt(material, 0);
      texture["board"].push(material);
    }
-   
  
    let back = new PIXI.Graphics();
    back.beginFill(board_color);
-   back.drawRect(0, 0, 603+margin, 603+margin);
+   back.drawRect(0, 0, window_w, window_h);
    back.endFill();
    app.stage.addChildAt(back, 0);
    texture["board"].push(back);
+ 
+   //makeButton(SIDE+margin+10, app, "BUTTON", 0xff0000, "blue", "yellow");
+   if(mode != "free"){
+     loadImage(SIDE+margin+10, info_y["button"]*30, app, "pass")
+     loadImage(SIDE+margin+100, info_y["button"]*30, app, "resign")
+     loadImage(SIDE+margin+190, info_y["button"]*30, app, "senrigan")
+   }else{
+     loadImage(SIDE+margin+10, info_y["button"]*30, app, "pass")
+     loadImage(SIDE+margin+10, info_y["button2"]*30, app, "head")
+     loadImage(SIDE+margin+100, info_y["button2"]*30, app, "back")
+     loadImage(SIDE+margin+190, info_y["button2"]*30, app, "forward")
+     loadImage(SIDE+margin+280, info_y["button2"]*30, app, "end")
+     loadImage(SIDE+margin+370, info_y["button2"]*30, app, "resume")
+     loadImage(SIDE+margin+460, info_y["button2"]*30, app, "override")
+ 
+   }
  }
  
- function loadImage(x, y, app, color, type, size, board_size){
-   x *= (size/(board_size-1))+margin/2;
-   y *= (size/(board_size-1))+margin/2;
-   path = "//localhost:8080/assets/";
-   let stone = new PIXI.Texture.from(path + color + ".png");
-   let stoneSprite = new PIXI.Sprite(stone);
-   stoneSprite.anchor.x = 0.5;
-   stoneSprite.anchor.y = 0.5;
-   stoneSprite.x = x;
-   stoneSprite.y = y;
-   switch(type){
-   case 4:
-     stoneSprite.scale.x = 0.3;
-     stoneSprite.scale.y = 0.3;
-     break;
-   case 3:
-     stoneSprite.scale.x = 0.1;
-     stoneSprite.scale.y = 0.1;
-     break;
-   case 2:
-     stoneSprite.scale.x = 0.05;
-     stoneSprite.scale.y = 0.05;
-     stoneSprite.alpha = 0.5;
-     break;
-   case 1:
-     stoneSprite.scale.x = 0.05;
-     stoneSprite.scale.y = 0.05;
-     stoneSprite.alpha = 0.1;
-     break;
+ function initInfo(app, texture){
+   let infoSprite = new PIXI.Graphics()
+     .beginFill("white")
+     .drawRect(SIDE+margin, 0, window_w-SIDE-margin, window_h)
+     .endFill();
+   app.stage.addChildAt(infoSprite, 0);
+   texture["board"].push(infoSprite);
+ }
+ 
+ function loadImage(x, y, app, name){
+   let X, Y;
+   if(window_w > window_h){
+     X = x;
+     Y = y;
+   }else{
+     X = x - SIDE;
+     Y = SIDE + margin + y;
    }
-   app.stage.addChild(stoneSprite);
-   texture[type].push(stoneSprite);
+   let path = "/assets/images/";
+   let obj = new PIXI.Texture.from(path + name + ".png");
+   let objSprite = new PIXI.Sprite(obj);
+   objSprite.x = X;
+   objSprite.y = Y;
+   objSprite.width = 80;
+   objSprite.height = 80;
+   objSprite.interactive = true;
+   objSprite.on('pointertap', b_events[name]);
+   app.stage.addChild(objSprite);
+   texture["button"].push(objSprite);
  }
  
  function makeImage(x, y, app, color, type, alpha, size, board_size){
@@ -235,6 +248,48 @@
    texture[type].push(material);
  }
  
+ function makeText(x, app, word, style, type){
+   let X, Y;
+   if(window_w > window_h){
+     X = x;
+     Y = info_y[type] * 30;
+   }else{
+     X = margin;
+     Y = x + info_y[type] * 30;
+   }
+   y = info_y[type] * 30;
+   let textobj = new PIXI.Text(word, style); // テキストオブジェクトの生成
+   textobj.position.x = X;  // 表示位置(x)
+   textobj.position.y = Y; // 表示位置(y)
+   app.stage.addChild(textobj);
+   texture[type].push(textobj);
+ }
+ 
+ function makeButton(x, app, word, color, color2, color3){
+   let X, Y;
+   if(window_w > window_h){
+     X = x;
+     Y = info_y["button"] * 30;
+   }else{
+     X = margin;
+     Y = x + info_y["button"] * 30;
+   }
+   let back = new PIXI.Graphics()
+     .beginFill(color)
+     .drawRect(X, Y, 100, 100)
+     .endFill();
+   app.stage.addChild(back);
+   texture["button"].push(back);
+   
+   let button_style = {fontSize:10, fill:'white', wordWrapWidth: 100, align: 'center'};
+   let textobj = new PIXI.Text("word", button_style) // テキストオブジェクトの生成
+     .position.x = X  // 表示位置(x)
+     .position.y = Y // 表示位置(y)
+     .anchor.set(0.5);
+   app.stage.addChild(textobj);
+   texture["button"].push(textobj);
+ }
+ 
  function deleteImage(texture, type){
    texture[type].forEach(v => {
      app.stage.removeChild(v);
@@ -244,67 +299,151 @@
  
  function putStone(e) {
    let position = e.data.getLocalPosition(app.stage);
-   let {x, y} = detectXY(position.x, position.y, 603, board_size);
-   socket.send("coordinate"+" "+(x+100*y)+" "+1);
+   let {x, y} = detectXY(position.x, position.y, SIDE, board_size);
+   if(mode != "free")
+     socket.send("coordinate_ai"+" "+(x+100*y)+" "+1);
+   else
+     socket.send("coordinate"+" "+(x+100*y)+" "+1);
+ }
+ 
+ function makeScorebar(app, score) {
+   let X, Y;
+   if(window_w > window_h){
+     X = SIDE + margin;
+     Y = 10;
+   }else{
+     X = 0;
+     Y = SIDE + margin;
+   }
+   let w_ter = 0x87ceeb;
+   let b_ter = 0xdc143c;
+   let left = X;
+   let base_len = (window_w - left)/2;
+   let b_len = Math.max(0, base_len+score*15);
+   let w_len = Math.max(0, base_len-score*15);
+   var w_bar = new PIXI.Graphics()
+     .beginFill(w_ter)
+     .drawRect(left+b_len, Y, w_len, 10)
+     .endFill();
+   var b_bar = new PIXI.Graphics()
+     .beginFill(b_ter)
+     .drawRect(left, Y, b_len, 10)
+     .endFill();
+   app.stage.addChild(w_bar);
+   app.stage.addChild(b_bar);
  }
  
  function huntDragon(e) {
    times++;
    if(times % 10 == 0){
      let position = e.data.getLocalPosition(app.stage);
-     let {x, y} = detectXY(position.x, position.y, 603, board_size);
+     let {x, y} = detectXY(position.x, position.y, SIDE, board_size);
      socket.send("dragon "+(x+100*y));
    }
  }
  
- document.getElementById("pass").onclick = function() {
-   socket.send("pass "+1);
+ var pass_f = function() {
+   if(mode != "free")
+     socket.send("pass_ai "+1);
+   else
+     socket.send("pass "+1);
  }
- document.getElementById("pass").onclick = function() {
-  socket.send("pass "+1);
-}
-document.getElementById("back").onclick = function() {
-  socket.send("back");
-}
-document.getElementById("forward").onclick = function() {
-  socket.send("forward");
-}
-document.getElementById("resume").onclick = function() {
-  socket.send("resume");
-}
-document.getElementById("override").onclick = function() {
-  socket.send("override");
-}
-document.getElementById("head").onclick = function() {
-  socket.send("head");
-}
-document.getElementById("end").onclick = function() {
-  socket.send("end");
-}
-
+ 
+ var resign_f = function() {
+   socket.send("resign");
+ }
+ 
+ var senrigan_f = function() {
+   socket.send("senrigan");
+   senrigan = !senrigan;
+   deleteImage(texture, "board");
+   initGoban(app, board_size, texture, senrigan);
+ }
+ 
+ var back_f = function() {
+   socket.send("back");
+ }
+ var forward_f = function() {
+   socket.send("forward");
+ }
+ var resume_f = function() {
+   socket.send("resume");
+ }
+ var override_f = function() {
+   socket.send("override");
+ }
+ var head_f = function() {
+   socket.send("head");
+ }
+ var end_f = function() {
+   socket.send("end");
+ }
+ 
  /***      ***
   *** Main *** 
   ***      ***/
- let score = new PIXI.Application({width: 603+margin, height: 10});
- let app = new PIXI.Application({width: 603+margin, height: 603+margin});
+  window_w = window.innerWidth;
+  window_h = window.innerHeight;
+  mode = "free";
+  if (window_w < window_h){
+    SIDE = window_w - margin;
+  }else{
+    SIDE = window_h - margin;
+  }
+ let app = new PIXI.Application({width: window_w-10, height: window_h-10});
+ app.renderer.resize(window_w, window_h);
  
  var url = "ws://" + window.location.host + ":1780" + window.location.pathname + "/ws";
+ //var url = "ws://" + window.location.host + window.location.pathname + "/ws";
  var socket = new WebSocket(url);
  var black = "";
  var white = "";
  var c_b = "0";
  var c_w = "0";
+ 
  var senrigan = false;
  
- document.body.appendChild(score.view);
  document.body.appendChild(app.view);
  
  console.log(board_size);
  
  let times = 0;
- let texture = {"board": [], "stone": [], "territory": [], "bless": [], "last": [], "link1": [], "link2": [], "link3": [], "link4": []};
+ let texture = {"board": [], 
+                "stone": [],
+                "territory": [],
+                "bless": [],
+                "last": [],
+                "link1": [],
+                "link2": [],
+                "link3": [],
+                "link4": [],
+                "button": [],
+                "player": [],
+                "message": [],
+                "score": [],
+                "turn": []};
+ let info_y = {"button": 5,
+               "button2": 8,
+               "player": 1,
+               "message": 2,
+               "score": 3,
+               "turn": 4};
+ let b_events = {"pass": pass_f,
+                 "resign": resign_f,
+                 "senrigan": senrigan_f,
+                 "head": head_f,
+                 "back": back_f,
+                 "forward": forward_f,
+                 "end": end_f,
+                 "resume": resume_f,
+                 "override": override_f};
+ font_style = {font:'60pt Arial', fill:'black'};
  
  initGoban(app, board_size, texture, senrigan);
+ makeText(SIDE+margin, app, "てすと", font_style, "player");
+ makeText(SIDE+margin, app, "てすと", font_style, "message");
+ makeText(SIDE+margin, app, "てすと", font_style, "score");
+ makeText(SIDE+margin, app, "てすと", font_style, "turn");
  
  // Disconnect event
  socket.addEventListener("close", function(event){
@@ -317,8 +456,6 @@ document.getElementById("end").onclick = function() {
    var size = 0;
    let i = 1, x = 0, y = 0;
  
-   let w_ter = 0x87ceeb;
-   let b_ter = 0xdc143c;
    console.log(msg);
  
    switch(msg['data'].split(":")[0]){
@@ -345,22 +482,22 @@ document.getElementById("end").onclick = function() {
        var white_t = 0x87ceeb;
        switch(v){
          case "-3":
-           makeImage(x, y, app, black_t, "territory", 0.2, 603, board_size);
+           makeImage(x, y, app, black_t, "territory", 0.2, SIDE, board_size);
            break;
          case "-2":
-           makeImage(x, y, app, black_t, "territory", 0.1, 603, board_size);
+           makeImage(x, y, app, black_t, "territory", 0.1, SIDE, board_size);
            break;
          case "-1":
-           makeImage(x, y, app, black_t, "territory", 0.05, 603, board_size);
+           makeImage(x, y, app, black_t, "territory", 0.05, SIDE, board_size);
            break;
          case "3":
-           makeImage(x, y, app, white_t, "territory", 0.2, 603, board_size);
+           makeImage(x, y, app, white_t, "territory", 0.2, SIDE, board_size);
            break;
          case "2":
-           makeImage(x, y, app, white_t, "territory", 0.1, 603, board_size);
+           makeImage(x, y, app, white_t, "territory", 0.1, SIDE, board_size);
            break;
          case "1":
-           makeImage(x, y, app, white_t, "territory", 0.05, 603, board_size);
+           makeImage(x, y, app, white_t, "territory", 0.05, SIDE, board_size);
            break;
          default:
            break;
@@ -379,10 +516,10 @@ document.getElementById("end").onclick = function() {
        var white_s = 0xffffff;
        switch(v){
          case "-4":
-           makeImage(x, y, app, black_s, "stone", 1, 603, board_size);
+           makeImage(x, y, app, black_s, "stone", 1, SIDE, board_size);
            break;
          case "4":
-           makeImage(x, y, app, white_s, "stone", 1, 603, board_size);
+           makeImage(x, y, app, white_s, "stone", 1, SIDE, board_size);
            break;
          default:
            break;
@@ -404,11 +541,11 @@ document.getElementById("end").onclick = function() {
          switch(v){
            case "-4":
              link_color = black_s;
-             makeImage(x, y, app, link_color, "link1", 1, 603, board_size);
+             makeImage(x, y, app, link_color, "link1", 1, SIDE, board_size);
              break;
            case "4":
              link_color = white_s;
-             makeImage(x, y, app, link_color, "link1", 1, 603, board_size);
+             makeImage(x, y, app, link_color, "link1", 1, SIDE, board_size);
              break;
          }
        }
@@ -416,11 +553,11 @@ document.getElementById("end").onclick = function() {
          switch(v){
            case "-4":
              link_color = black_s;
-             makeImage(x, y, app, link_color, "link2", 1, 603, board_size);
+             makeImage(x, y, app, link_color, "link2", 1, SIDE, board_size);
              break;
            case "4":
              link_color = white_s;
-             makeImage(x, y, app, link_color, "link2", 1, 603, board_size);
+             makeImage(x, y, app, link_color, "link2", 1, SIDE, board_size);
              break;
          }
        }
@@ -428,11 +565,11 @@ document.getElementById("end").onclick = function() {
          switch(v){
            case "-4":
              link_color = black_s;
-             makeImage(x, y, app, link_color, "link3", 1, 603, board_size);
+             makeImage(x, y, app, link_color, "link3", 1, SIDE, board_size);
              break;
            case "4":
              link_color = white_s;
-             makeImage(x, y, app, link_color, "link3", 1, 603, board_size);
+             makeImage(x, y, app, link_color, "link3", 1, SIDE, board_size);
              break;
          }
        }
@@ -440,23 +577,25 @@ document.getElementById("end").onclick = function() {
          switch(v){
            case "-4":
              link_color = black_s;
-             makeImage(x, y, app, link_color, "link4", 1, 603, board_size);
+             makeImage(x, y, app, link_color, "link4", 1, SIDE, board_size);
              break;
            case "4":
              link_color = white_s;
-             makeImage(x, y, app, link_color, "link4", 1, 603, board_size);
+             makeImage(x, y, app, link_color, "link4", 1, SIDE, board_size);
              break;
          }
        }
        i++;
      })
-     document.getElementById("play").innerHTML = "";
+     deleteImage(texture, "message");
      break;
    case "pass":
-     document.getElementById("play").innerHTML = "<font color=\"blue\">PASS</font>";
+     deleteImage(texture, "message");
+     makeText(SIDE+margin, app, "PASS", font_style, "message");
      break;
    case "busy":
-     document.getElementById("play").innerHTML = "<font color=\"red\">処理中...</font>";
+     deleteImage(texture, "message");
+     makeText(SIDE+margin, app, "処理中...", font_style, "message");
      break;
    case "bless":
      obj = msg['data'].split(":")[1].split(",");
@@ -465,76 +604,39 @@ document.getElementById("end").onclick = function() {
      obj.forEach(v => {
        y = Math.floor(v / 100);
        x = v - y*100;
-       makeImage(x, y, app, 0xff0000, "bless", 1, 603, board_size);
+       makeImage(x, y, app, 0xff0000, "bless", 1, SIDE, board_size);
      })
      break;
    case "score":
      obj = msg['data'].split(":")[1].split(" ")[0].split("+");
      size = Math.sqrt(obj.length);
-     document.getElementById("score").innerHTML = msg['data'].split(":")[1].split(" ")[0];
+     deleteImage(texture, "score");
+     makeText(SIDE+margin, app, msg['data'].split(":")[1].split(" ")[0], font_style, "score");
      obj[1] = parseFloat(obj[1]);
      if(obj[0]=="W"){
        obj[1] *= -1;
      }
-     var boudary = (603+margin)/2 - obj[1]*15;
-     var w_bar = new PIXI.Graphics()
-       .beginFill(w_ter)
-       .drawPolygon([
-         0, 0,
-         boudary, 0,
-         boudary, 100,
-         0, 100
-       ])
-     .endFill();
-     var b_bar = new PIXI.Graphics()
-     .beginFill(b_ter)
-     .drawPolygon([
-       boudary, 0,
-       603+margin, 0,
-       603+margin, 100,
-       boudary, 100
-     ])
-   .endFill();
-     score.stage.addChild(w_bar);
-     score.stage.addChild(b_bar);
+     makeScorebar(app, obj[1]);
      break;
    case "finalscore":
      obj = msg['data'].split(":")[1].split(" ")[0].split("+");
      size = Math.sqrt(obj.length);
-     document.getElementById("score").innerHTML = "<b>Good Game! "+msg['data'].split(":")[1].split(" ")[0]+"</b>";
+     deleteImage(texture, "score");
+     makeText(SIDE+margin, app, "Good Game!" + msg['data'].split(":")[1].split(" ")[0], font_style, "score");
      if(obj[1]=="R") obj[1] = 30;
      obj[1] = parseFloat(obj[1]);
      if(obj[0]=="W"){
        obj[1] *= -1;
      }
-     var boudary = (603+margin)/2 - obj[1]*15;
-     var w_bar = new PIXI.Graphics()
-       .beginFill(w_ter)
-       .drawPolygon([
-         0, 0,
-         boudary, 0,
-         boudary, 100,
-         0, 100
-       ])
-     .endFill();
-     var b_bar = new PIXI.Graphics()
-     .beginFill(b_ter)
-     .drawPolygon([
-       boudary, 0,
-       603+margin, 0,
-       603+margin, 100,
-       boudary, 100
-     ])
-     .endFill();
-     score.stage.addChild(w_bar);
-     score.stage.addChild(b_bar);
-     document.getElementById("play").innerHTML = "";
+     makeScorebar(app, obj[1]);
+     deleteImage(texture, "message");
      break;
    case "captured":
      obj = msg['data'].split(":")[1].split(",");
      c_b = obj[0];
      c_w = obj[1];
-     document.getElementById("player").innerHTML = "●"+black+"("+c_b+")"+"　○"+white+"("+c_w+")";
+     deleteImage(texture, "player");
+     makeText(SIDE+margin, app, "●"+black+"("+c_b+")"+"　○"+white+"("+c_w+")", font_style, "player");
      break;
    case "turn":
      obj = msg['data'].split(":")[1];
@@ -546,17 +648,21 @@ document.getElementById("end").onclick = function() {
      }else{
        now_turn = "黒番"
      }
-     document.getElementById("turn").innerHTML = "現在"+now_turn+"です。";
+     deleteImage(texture, "turn");
+     makeText(SIDE+margin, app, "現在"+now_turn+"です。", font_style, "turn");
      y = Math.floor(last_pos / 100);
      x = last_pos - y*100;
      deleteImage(texture, "last");
-     makeImage(x, y, app, 0xff0000, "last", 1, 603, board_size);
+     makeImage(x, y, app, 0xff0000, "last", 1, SIDE, board_size);
      break;
    case "player":
      obj = msg['data'].split(":")[1];
      black = obj.split(",")[0];
      white = obj.split(",")[1];
-     document.getElementById("player").innerHTML = "●"+black+"("+c_b+")"+"　○"+white+"("+c_w+")";
+     deleteImage(texture, "player");
+     makeText(SIDE+margin, app, "●"+black+"("+c_b+")"+"　○"+white+"("+c_w+")", font_style, "player");
      break;
    }
  }
+ 
+ 
