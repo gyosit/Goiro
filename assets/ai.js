@@ -116,8 +116,8 @@ function initGoban(app, size, texture, sengigan){
     loadImage(SIDE+margin+100, info_y["button2"]*30, app, "back")
     loadImage(SIDE+margin+190, info_y["button2"]*30, app, "forward")
     loadImage(SIDE+margin+280, info_y["button2"]*30, app, "end")
-    loadImage(SIDE+margin+370, info_y["button2"]*30, app, "resume")
-    loadImage(SIDE+margin+460, info_y["button2"]*30, app, "override")
+    loadImage(SIDE+margin+10, info_y["button3"]*30, app, "resume")
+    loadImage(SIDE+margin+100, info_y["button3"]*30, app, "override")
 
   }
 }
@@ -424,6 +424,7 @@ let texture = {"board": [],
                "turn": []};
 let info_y = {"button": 5,
               "button2": 8,
+              "button3": 11,
               "player": 1,
               "message": 2,
               "score": 3,
