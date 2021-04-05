@@ -4,9 +4,9 @@ window.addEventListener("resize", function() {
    app.renderer.resize(window_w-10, window_h-10);
    app.stage.removeChildren();
    if (window_w < window_h){
-      SIDE = window_w - margin;
+      SIDE = window_h/2;
    }else{
-      SIDE = window_h - margin;
+      SIDE = window_w/2;
    }
    SIDE -= 10;
 
