@@ -386,9 +386,9 @@ var end_f = function() {
  window_h = window.innerHeight;
  mode = "ai";
  if (window_w < window_h){
-   SIDE = window_w - margin;
+   SIDE = window_h/2;
  }else{
-   SIDE = window_h - margin;
+   SIDE = window_w/2;
  }
 let app = new PIXI.Application({width: window_w-10, height: window_h-10});
 app.renderer.resize(window_w, window_h);

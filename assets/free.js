@@ -386,9 +386,9 @@
   window_h = window.innerHeight;
   mode = "free";
   if (window_w < window_h){
-    SIDE = window_w - margin;
+    SIDE = window_h/2;
   }else{
-    SIDE = window_h - margin;
+    SIDE = window_w/2;
   }
  let app = new PIXI.Application({width: window_w-10, height: window_h-10});
  app.renderer.resize(window_w, window_h);
@@ -440,10 +440,6 @@
  font_style = {font:'60pt Arial', fill:'black'};
  
  initGoban(app, board_size, texture, senrigan);
- makeText(SIDE+margin, app, "てすと", font_style, "player");
- makeText(SIDE+margin, app, "てすと", font_style, "message");
- makeText(SIDE+margin, app, "てすと", font_style, "score");
- makeText(SIDE+margin, app, "てすと", font_style, "turn");
  
  // Disconnect event
  socket.addEventListener("close", function(event){
