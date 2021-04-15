@@ -249,38 +249,39 @@ func main() {
 
 	router.POST("/regist", func(ctx *gin.Context){
 		var form User
+		username := ctx.PostForm("username")
+		pass := ctx.PostForm("pass")
 		if err := ctx.Bind(&form); err != nil{
-			ctx.HTML(http.StatusBadRequest, "login.html", gin.H{"err": err})
-			ctx.Abort()
-		}else{
-			username := ctx.PostForm("username")
-			pass := ctx.PostForm("pass")
 			if err := createUser(username, pass); err != nil{
 				fmt.Printf("Already user\n")
-				ctx.HTML(http.StatusBadRequest, "login.html", gin.H{"err": err})
+				ctx.HTML(http.StatusBadRequest, "regist.html", gin.H{"err": "既にそのユーザーが存在します。"})
 				fmt.Println(err)
+			}else{
+				ctx.HTML(http.StatusBadRequest, "login.html", gin.H{"err": err})
+				ctx.Abort()
 			}
+		}else{
 			ctx.Redirect(302, "/login")
 		}
 	})
 
 	router.POST("/login", func(ctx *gin.Context){
 		var form User
+		username := ctx.PostForm("username")
+		pass := ctx.PostForm("pass")
 		if err := ctx.Bind(&form); err != nil{
-			ctx.HTML(http.StatusBadRequest, "login.html", gin.H{"err": err})
-			ctx.Abort()
-		}else{
-			username := ctx.PostForm("username")
-			pass := ctx.PostForm("pass")
 			ex_pass := getUser(username).Password
 			if err := crypto.CompareHashAndPassword(ex_pass, pass); err != nil{
 				fmt.Printf("No User\n")
 				fmt.Println(err)
-				ctx.HTML(http.StatusBadRequest, "login.html", gin.H{"err": err})
+				ctx.HTML(http.StatusBadRequest, "login.html", gin.H{"err": "ユーザー名かパスワードが違います。"})
 			}else{
-				SessionManager.Login(ctx, username)
-				ctx.Redirect(302, "/")
+				ctx.HTML(http.StatusBadRequest, "login.html", gin.H{"err": err})
+				ctx.Abort()
 			}
+		}else{
+			SessionManager.Login(ctx, username)
+			ctx.Redirect(302, "/")
 		}
 	})
 

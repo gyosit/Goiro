@@ -1,10 +1,12 @@
 <!doctype html>
 <head>
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Login</title>
   <style src="/assets/index.css"></style>
 </head>
 <body>
   <h1>ログイン</h1>
+  <font color="red">{{.err}}</font>
   <form action="/login", method="post">
     <tr>
       <td align="right">名前</td>
