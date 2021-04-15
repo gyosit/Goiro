@@ -11,5 +11,6 @@ window.addEventListener("resize", function() {
    SIDE -= 10;
 
    initGoban(app, board_size, texture, senrigan);
+   socket.send("show");
 });
 
