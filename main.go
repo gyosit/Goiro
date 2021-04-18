@@ -108,6 +108,7 @@ func main() {
 		var mode string
 		hash := ctx.Param("room")
 		room := getRoom(hash)
+		fmt.Println(room)
 		size := strconv.Itoa(room.Size)
 		switch(room.Black == "COM" || room.White == "COM"){
 		case true:
@@ -239,6 +240,14 @@ func main() {
 		rooms := getRooms()
 		fmt.Println(rooms)
 		ctx.HTML(200, "rooms.html", gin.H{"rooms": rooms})
+	})
+
+	router.GET("/thanks", func(ctx *gin.Context){
+		ctx.HTML(200, "thanks.html", gin.H{})
+	})
+
+	router.GET("/history", func(ctx *gin.Context){
+		ctx.HTML(200, "history.html", gin.H{})
 	})
 
 	router.GET("/review", func(ctx *gin.Context){
@@ -398,7 +407,7 @@ func main() {
 		room := getRoom(hash)
 		fmt.Println(room)
 		if room.Status == 0 && enters[url] < 1{
-			deleteRoom(room.Hash)
+			//deleteRoom(room.Hash) //検討画面の戻る→進む応急バグ対応　今後画面遷移をしない形で修正
 			fmt.Printf("deleted\n")
 		}
 	})
