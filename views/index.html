@@ -25,13 +25,17 @@
     本サイトはまだ試作段階です。サーバーダウンや不具合等がありえます。<br>
     また、パスワードはサーバー内で暗号化しておりますが、それでも通信の傍受や流出はありえます。<br>
     これらについて当サイトでは責任を負えませんのでご了承ください。<br>
+    不具合・要望は<a href="https://twitter.com/Mr_isoy">作者Twitter</a>か<a href="https://marshmallow-qa.com/mr_isoy">マシュマロ</a>　に連絡いただけると幸いです。<br>
   </font>
+  それでは楽しい囲碁ライフを！<br>
   {{if eq .username ""}}
     <a href="regist">新規登録</a>　<a href="login">ログイン</a><br>
   {{else}}
     {{.username}}　さん <a href="/review">検討</a>
 			<a href="logout">ログアウト</a>
   {{end}}
+  <a href="history">更新履歴</a>
+  <a href="thanks">★スペシャルサンクス★</a>
 
   {{if ne .username ""}}
   <form name="create_room" method="POST" action="/">

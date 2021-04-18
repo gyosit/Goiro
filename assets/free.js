@@ -393,8 +393,8 @@
  let app = new PIXI.Application({width: window_w-10, height: window_h-10});
  app.renderer.resize(window_w, window_h);
  
- var url = "ws://" + window.location.host + ":1780" + window.location.pathname + "/ws";
- //var url = "ws://" + window.location.host + window.location.pathname + "/ws";
+ //var url = "ws://" + window.location.host + ":1780" + window.location.pathname + "/ws";
+ var url = "ws://" + window.location.host + window.location.pathname + "/ws";
  var socket = new WebSocket(url);
  var black = "";
  var white = "";
