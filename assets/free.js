@@ -114,8 +114,8 @@
      loadImage(SIDE+margin+10, info_y["button"]*30, app, "pass")
      loadImage(SIDE+margin+10, info_y["button2"]*30, app, "head")
      loadImage(SIDE+margin+100, info_y["button2"]*30, app, "back")
-     loadImage(SIDE+margin+190, info_y["button2"]*30, app, "forward")
-     loadImage(SIDE+margin+280, info_y["button2"]*30, app, "end")
+     loadImage(SIDE+margin+160, info_y["button2"]*30, app, "forward")
+     loadImage(SIDE+margin+220, info_y["button2"]*30, app, "end")
      loadImage(SIDE+margin+10, info_y["button3"]*30, app, "resume")
      loadImage(SIDE+margin+100, info_y["button3"]*30, app, "override")
  
@@ -145,8 +145,8 @@
    let objSprite = new PIXI.Sprite(obj);
    objSprite.x = X;
    objSprite.y = Y;
-   objSprite.width = 80;
-   objSprite.height = 80;
+   objSprite.scale.x = 0.4;
+   objSprite.scale.y = 0.4;
    objSprite.interactive = true;
    objSprite.on('pointertap', b_events[name]);
    app.stage.addChild(objSprite);
@@ -393,8 +393,8 @@
  let app = new PIXI.Application({width: window_w-10, height: window_h-10});
  app.renderer.resize(window_w, window_h);
  
- var url = "ws://" + window.location.host + ":1780" + window.location.pathname + "/ws";
-// var url = "ws://" + window.location.host + window.location.pathname + "/ws";
+ //var url = "ws://" + window.location.host + ":1780" + window.location.pathname + "/ws";
+ var url = "ws://" + window.location.host + window.location.pathname + "/ws";
  var socket = new WebSocket(url);
  var black = "";
  var white = "";
@@ -423,8 +423,8 @@
                 "score": [],
                 "turn": []};
  let info_y = {"button": 5,
-               "button2": 8,
-               "button3": 11,
+               "button2": 7,
+               "button3": 8,
                "player": 1,
                "message": 2,
                "score": 3,
