@@ -587,8 +587,8 @@ window_h = document.documentElement.clientHeight;
 document.body.appendChild(renderer.view);
 let stage = new PIXI.Container();
 
-//var url = "ws://" + window.location.host + ":1780" + window.location.pathname + "/ws";
-var url = "ws://" + window.location.host + window.location.pathname + "/ws";
+var url = "wss://" + window.location.host + ":1780" + window.location.pathname + "/ws";
+//var url = "ws://" + window.location.host + window.location.pathname + "/ws";
 var socket = new WebSocket(url);
 var black = "";
 var white = "";
@@ -789,7 +789,7 @@ socket.addEventListener("close", function(event){
           //ケイマ (7時)
           keima_seven = obj[i-1] == obj[i-2+2*size] && obj[i-1+size] != obj[i-1]*-1 && obj[i-2+size] != obj[i-1]*-1 && i % size != 1;
           //ケイマ (8時)
-          keima_eight = obj[i-1] == obj[i-3+size] && obj[i-2] != obj[i-1]*-1 && obj[i-2+size] != obj[i-1]*-1 && i % size != 2;
+          keima_eight = obj[i-1] == obj[i-3+size] && obj[i-2] != obj[i-1]*-1 && obj[i-2+size] != obj[i-1]*-1 && i % size != 1 && i % size != 2;
 
           if(vertical_line){
             //縦方向の直列
