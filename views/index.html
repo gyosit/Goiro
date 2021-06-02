@@ -21,129 +21,6 @@
   </style>
 </head>
 <body>
-  <font color="red">
-    本サイトはまだ試作段階です。サーバーダウンや不具合等がありえます。<br>
-    また、パスワードはサーバー内で暗号化しておりますが、それでも通信の傍受や流出はありえます。<br>
-    これらについて当サイトでは責任を負えませんのでご了承ください。<br>
-    不具合・要望は<a href="https://twitter.com/Mr_isoy">作者Twitter</a>か<a href="https://marshmallow-qa.com/mr_isoy">マシュマロ</a>　に連絡いただけると幸いです。<br>
-  </font>
-  それでは楽しい囲碁ライフを！<br>
-  {{if eq .username ""}}
-    <a href="regist">新規登録</a>　<a href="login">ログイン</a><br>
-  {{else}}
-    {{.username}}　さん <a href="/review">検討</a>
-			<a href="logout">ログアウト</a>
-  {{end}}
-  <a href="history">更新履歴</a>
-  <a href="thanks">★スペシャルサンクス★</a>
-
-  {{if ne .username ""}}
-  <form name="create_room" method="POST" action="/">
-    <h2><s>対人戦</s> (COMING SOON!)</h2>
-    <tr>
-      <td align="right">部屋の名前(任意)</td>
-      <td><input type="text" name="name"></td>
-    </tr><br>
-    <!--tr>
-      <td align="right">パスワード(無い場合は未記入)</td>
-      <td><input type="password" name="pass"></td>
-    </tr-->
-    <tr>
-      <td align="right">盤のサイズ</td>
-      <td><select name="size">
-        <option value="9">9</option>
-        <option value="13">13</option>
-        <option value="19">19</option>
-      </select></td>
-    </tr><br>
-    <tr>
-      <td align="right">コミ(白が得る地)</td>
-      <td><input id="komi" type="number" name="komi" value=6.5 step=0.5></td>
-    </tr><br>
-    <tr>
-      <td align="right">手番</td>
-      <td><select name="turn">
-        <option value="nigiri">にぎり</option>
-        <option value="black">黒番</option>
-        <option value="white">白番</option>
-      </select></td>
-    </tr><br>
-    <tr>
-      <td align="right">ハンデ(黒が置く石の数) 2～9</td>
-      <td><input id="hande" type="number" name="hande" value=0 max=9 step=1 onchange="k()"></td>
-    </tr><br>
-    <!-- <input type="submit" value="部屋を作成"> -->
-  </form>
-
-  <form name="AI_room" method="POST" action="/ai_room">
-    <h2>AI対戦</h2>
-    AI (15級～10級相当のコンピュータと対戦ができます) <br>
-    <tr>
-      <td align="right">盤のサイズ</td>
-      <td><select name="size">
-        <option value="9">9</option>
-        <option value="13">13</option>
-        <option value="19">19</option>
-      </select></td>
-    </tr><br>
-    <tr>
-      <td align="right">コミ(白が得る地)</td>
-      <td><input id="komi_ai" type="number" name="komi" value=6.5 step=0.5></td>
-    </tr><br>
-    <tr>
-      <td align="right">手番</td>
-      <td><select name="turn">
-        <option value="nigiri">にぎり</option>
-        <option value="black">黒番</option>
-        <option value="white">白番</option>
-      </select></td>
-    </tr><br>
-    <tr>
-      <td align="right">ハンデ(黒が置く石の数) 2～9</td>
-      <td><input id="hande_ai" type="number" name="hande" value=0 max=9 step=1 onchange="k_ai()"></td>
-    </tr><br>
-    <a id="submit" class="btn" href="javascript:AI_room.submit()">AI対戦</a>
-  </form>
-
-  <form name="free_room" method="POST" action="/free_room">
-    <h2>自由碁盤</h2>
-    碁盤に石を並べて検討を行うことができます <br>
-    <tr>
-      <td align="right">盤のサイズ</td>
-      <td><select name="size">
-        <option value="9">9</option>
-        <option value="13">13</option>
-        <option value="19">19</option>
-      </select></td>
-    </tr><br>
-    <tr>
-      <td align="right">コミ(白が得る地)</td>
-      <td><input id="komi_ai" type="number" name="komi" value=6.5 step=0.5></td>
-    </tr><br>
-    <tr>
-    </tr><br>
-    <tr>
-      <td align="right">ハンデ(黒が置く石の数) 2～9</td>
-      <td><input id="hande_ai" type="number" name="hande" value=0 max=9 step=1 onchange="k_ai()"></td>
-    </tr><br>
-    <a id="submit" class="btn" href="javascript:free_room.submit()">碁盤を出す</a>
-  </form>
-
-  {{end}}
-
-  <!-- form name="go_room" method="POST" action="/">
-    <h2>自動申請</h2>
-    ハンデなしの設定した条件に一致する部屋に申し込みます。 <br>
-    <tr>
-      <td align="right">盤のサイズ(1以上の整数)</td>
-      <td><input type="number" name="size" min=1 step=1></td>
-    </tr>
-    <tr>
-      <td align="right">コミ(白が得る地)</td>
-      <td><input type="number" name="コミ"></td>
-    </tr>
-    <input type="submit" value="自動申請">
-  </form -->
   <script type="text/javascript">
     function k(){
       v = document.getElementById("hande").value;
@@ -155,6 +32,10 @@
       if(v > 0 && v<10) document.getElementById("komi_ai").value = 0;
       else document.getElementById("komi_ai").value = 6.5;
     }
+    username = "{{.username}}";
   </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/5.1.3/pixi.min.js"></script>
+  <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+  <script src="/assets/common.js"></script>
 </body>
 </html>
