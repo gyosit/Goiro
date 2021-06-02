@@ -90,6 +90,7 @@ func main() {
 	player := make(map[playerKeys]string)
 	pass := make(map[string]int)
 	count := make(map[string]int)
+	hash_table := make(map[string]string)
 
 	// Session
 	//store := cookie.NewStore([]byte("secret"))
@@ -198,8 +199,9 @@ func main() {
 		}
 	})
 
-	router.GET("/play/:user/:room/ws", func(ctx *gin.Context){
-		fmt.Printf("GOOD JOB!!!!")
+	router.GET("/connect/:user/ws", func(ctx *gin.Context){
+		user := ctx.Param("user")
+		fmt.Println(user)
 		m.HandleRequest(ctx.Writer, ctx.Request)
 	})
 
@@ -250,9 +252,13 @@ func main() {
 		ctx.HTML(200, "history.html", gin.H{})
 	})
 
+	router.GET("/message", func(ctx *gin.Context){
+		ctx.HTML(200, "message.html", gin.H{})
+	})
+
 	router.GET("/review", func(ctx *gin.Context){
 		user := SessionManager.GetUser(ctx)
-		rooms := getMyRooms(user)
+		rooms := getMyRooms(user, 0)
 		ctx.HTML(200, "review.html", gin.H{"user": user, "rooms": rooms})
 	})
 
@@ -260,17 +266,16 @@ func main() {
 		var form User
 		username := ctx.PostForm("username")
 		pass := ctx.PostForm("pass")
-		if err := ctx.Bind(&form); err != nil{
+		if err := ctx.Bind(&form); err == nil{
 			if err := createUser(username, pass); err != nil{
 				fmt.Printf("Already user\n")
 				ctx.HTML(http.StatusBadRequest, "regist.html", gin.H{"err": "既にそのユーザーが存在します。"})
 				fmt.Println(err)
 			}else{
-				ctx.HTML(http.StatusBadRequest, "login.html", gin.H{"err": err})
-				ctx.Abort()
+				ctx.Redirect(302, "/login")
 			}
 		}else{
-			ctx.Redirect(302, "/login")
+			fmt.Println(err)
 		}
 	})
 
@@ -278,19 +283,18 @@ func main() {
 		var form User
 		username := ctx.PostForm("username")
 		pass := ctx.PostForm("pass")
-		if err := ctx.Bind(&form); err != nil{
+		fmt.Println(pass)
+		if err := ctx.Bind(&form); err == nil{
 			ex_pass := getUser(username).Password
 			if err := crypto.CompareHashAndPassword(ex_pass, pass); err != nil{
 				fmt.Printf("No User\n")
 				fmt.Println(err)
 				ctx.HTML(http.StatusBadRequest, "login.html", gin.H{"err": "ユーザー名かパスワードが違います。"})
 			}else{
-				ctx.HTML(http.StatusBadRequest, "login.html", gin.H{"err": err})
-				ctx.Abort()
+				fmt.Printf("Go login\n")
+				SessionManager.Login(ctx, username)
+				ctx.Redirect(302, "/")
 			}
-		}else{
-			SessionManager.Login(ctx, username)
-			ctx.Redirect(302, "/")
 		}
 	})
 
@@ -391,24 +395,21 @@ func main() {
 	})
 
 	m.HandleConnect(func(s *melody.Session){
-		enters[s.Request.URL.Path] += 1
-		fmt.Printf("Connect\n")
-		sendClient(m, s, "connected", false)
+		fmt.Println(s.Request.URL.Path)
 	})
 	
 	m.HandleDisconnect(func(s *melody.Session){
-		url := s.Request.URL.Path
 		fmt.Printf("DISCONNECT\n")
-		enters[url] -= 1
-		fmt.Println(enters[url])
-		hash := strings.Split(url, "/")[3]
-		fmt.Printf(hash)
-		fmt.Printf("\n")
-		room := getRoom(hash)
-		fmt.Println(room)
-		if room.Status == 0 && enters[url] < 1{
-			//deleteRoom(room.Hash) //検討画面の戻る→進む応急バグ対応　今後画面遷移をしない形で修正
-			fmt.Printf("deleted\n")
+		user := strings.Split(s.Request.URL.Path, "/")[2]
+		hash := hash_table[user]
+		if(hash != ""){
+			enters[hash] -= 1
+			room := getRoom(hash)
+			fmt.Println(room)
+			if room.Status < 2 && enters[hash] < 1{
+				deleteRoom(room.Hash) //検討画面の戻る→進む応急バグ対応　今後画面遷移をしない形で修正
+				fmt.Printf("deleted\n")
+			}
 		}
 	})
 		
@@ -416,7 +417,7 @@ func main() {
 		head := "./assets/kifu/"
 		tail := ".sgf"
 		user := strings.Split(s.Request.URL.Path, "/")[2]
-		hash := strings.Split(s.Request.URL.Path, "/")[3]
+		hash := hash_table[user]
 		original_hash := hash
 		room := getRoom(hash)
 		parse := strings.Split(string(msg), " ")
@@ -463,9 +464,10 @@ func main() {
 				
 			}
 			board := ex_gnugo.ShowInfluence(hash, turn[hash], room.Size)
-			sendClient(m, s, "board:"+board, true)
+			sendClient(m, s, "board:"+board, true, hash_table)
 			score := ex_gnugo.EstimateScore(hash)
-			sendClient(m, s, "score:"+score, true)
+			sendClient(m, s, "score:"+score, true, hash_table)
+			sendClient(m, s, "player:"+room.Black+","+room.White, true, hash_table)
 			if _, err := os.Stat(head+hash+"tmp"+tail); err == nil{
 				copyFile(hash, "tmptmp")
 			}
@@ -480,25 +482,29 @@ func main() {
 			if res != "Illegal"{
 				pass[hash] = 0
 				c_b, c_w := ex_gnugo.CapturedStone(hash)
-				sendClient(m, s, "board:"+board, true)
-				sendClient(m, s, "captured:"+c_b+","+c_w, true)
+				sendClient(m, s, "board:"+board, true, hash_table)
+				sendClient(m, s, "captured:"+c_b+","+c_w, true, hash_table)
 				last := ex_gnugo.CheckTurn(hash, room.Size)
-				sendClient(m, s, "turn:"+last, true)
+				sendClient(m, s, "turn:"+last, true, hash_table)
+				sendClient(m, s, "player:"+room.Black+","+room.White, true, hash_table)
 				score, board, best := ex_gnugo.Genmove(hash, turn[hash], i, room.Size, level)
 				c_b, c_w = ex_gnugo.CapturedStone(hash)
-				sendClient(m, s, "board:"+board, true)
-				sendClient(m, s, "captured:"+c_b+","+c_w, true)
-				sendClient(m, s, "score:"+score, true)
+				sendClient(m, s, "board:"+board, true, hash_table)
+				sendClient(m, s, "captured:"+c_b+","+c_w, true, hash_table)
+				sendClient(m, s, "score:"+score, true, hash_table)
+				last = ex_gnugo.CheckTurn(hash, room.Size)
+				sendClient(m, s, "turn:"+last, true, hash_table)
+				sendClient(m, s, "player:"+room.Black+","+room.White, true, hash_table)
 				if best == "tt"{
 					pass[hash]++
-					sendClient(m, s, "pass", true)
+					sendClient(m, s, "pass", true, hash_table)
 					if pass[hash] > 1{
-						sendClient(m, s, "busy", true)
+						sendClient(m, s, "busy", true, hash_table)
 						score = ex_gnugo.FinalScore(hash)
 						endGame(hash, score)
 						ex_gnugo.WriteScore(hash, score)
 						turn[hash] = 2
-						sendClient(m, s, "finalscore:"+score, true)
+						sendClient(m, s, "finalscore:"+score, true, hash_table)
 					}
 				}else{
 					pass[hash] = 0
@@ -508,7 +514,7 @@ func main() {
 			i, _ := strconv.Atoi(parse[1])
 			res := ex_gnugo.HuntDragon(hash, turn[hash], i, room.Size)
 			fmt.Printf(res)
-			sendClient(m, s, "bless:"+res, false)
+			sendClient(m, s, "bless:"+res, false, hash_table)
 		case "pass":
 			if user != player[playerKeys{hash, turn[hash]}]{
 				break
@@ -518,21 +524,21 @@ func main() {
 					copyFile(hash, "_")
 				}
 			}
-			sendClient(m, s, "pass", true)
+			sendClient(m, s, "pass", true, hash_table)
 			pass[hash]++
 			ex_gnugo.Pass(hash, turn[hash], room.Size, 0)
 			turn[hash] *= -1
 			var score string
-			if pass[hash] > 1{
-				sendClient(m, s, "busy", true)
+			if pass[hash] > 1 && player[playerKeys{hash, -1}] != player[playerKeys{hash, 1}]{
+				sendClient(m, s, "busy", true, hash_table)
 				score = ex_gnugo.FinalScore(hash)
 				endGame(hash, score)
 				ex_gnugo.WriteScore(hash, score)
 				turn[hash] = 2
-				sendClient(m, s, "finalscore:"+score, true)
+				sendClient(m, s, "finalscore:"+score, true, hash_table)
 			}else{
 				score =  ex_gnugo.EstimateScore(hash)
-				sendClient(m, s, "score:"+score, true)
+				sendClient(m, s, "score:"+score, true, hash_table)
 			}
 			if _, err := os.Stat(head+hash+"tmp"+tail); err == nil{
 				copyFile(hash, "tmptmp")
@@ -547,27 +553,28 @@ func main() {
 				score, board, best := ex_gnugo.Pass(hash, turn[hash], room.Size, level)
 				if best == "tt"{
 					// End this game by AI
-					sendClient(m, s, "busy", true)
+					sendClient(m, s, "busy", true, hash_table)
 					score = ex_gnugo.FinalScore(hash)
 					endGame(hash, score)
 					ex_gnugo.WriteScore(hash, score)
 					turn[hash] = 2
-					sendClient(m, s, "finalscore:"+score, true)
+					sendClient(m, s, "finalscore:"+score, true, hash_table)
 				}else{
 					// Continue this game
 					pass[hash] = 0
-					sendClient(m, s, "board:"+board, true)
-					sendClient(m, s, "score:"+score, true)
+					sendClient(m, s, "board:"+board, true, hash_table)
+					sendClient(m, s, "score:"+score, true, hash_table)
+					sendClient(m, s, "player:"+room.Black+","+room.White, true, hash_table)
 				}
 			}else{
 				// End this game by the user
 				ex_gnugo.Pass(hash, turn[hash], 9, 0)
-				sendClient(m, s, "busy", true)
+				sendClient(m, s, "busy", true, hash_table)
 				score := ex_gnugo.FinalScore(hash)
 				endGame(hash, score)
 				ex_gnugo.WriteScore(hash, score)
 				turn[hash] = 2
-				sendClient(m, s, "finalscore:"+score, true)
+				sendClient(m, s, "finalscore:"+score, true, hash_table)
 			}
 		case "resign":
 			if user != player[playerKeys{hash, turn[hash]}]{
@@ -583,7 +590,8 @@ func main() {
 				turn[hash] = -3
 			}
 			pass[hash] = 0
-			sendClient(m, s, "finalscore:"+resign, true)
+			sendClient(m, s, "player:"+room.Black+","+room.White, true, hash_table)
+			sendClient(m, s, "finalscore:"+resign, true, hash_table)
 		case "senrigan":
 			if !senrigan{
 				copySenrigan(hash, user, true)
@@ -594,43 +602,43 @@ func main() {
 				copySenrigan(hash, user, false)
 				hash = original_hash
 				board := ex_gnugo.ShowInfluence(hash, turn[hash], room.Size)
-				sendClient(m, s, "board:"+board, true)
+				sendClient(m, s, "board:"+board, true, hash_table)
 				score := ex_gnugo.EstimateScore(hash)
-				sendClient(m, s, "score:"+score, true)	
+				sendClient(m, s, "score:"+score, true, hash_table)	
 			}
 		case "show":
 			room := getRoom(hash)
-			sendClient(m, s, "player:"+room.Black+","+room.White, true)
+			sendClient(m, s, "player:"+room.Black+","+room.White, true, hash_table)
 			var score string
 			if(room.Status == 2){
 				score = room.Winner
 				board := ex_gnugo.ShowInfluence(hash, 1, room.Size)
-				sendClient(m, s, "board:"+board, true)
-				sendClient(m, s, "finalscore:"+score, true)
+				sendClient(m, s, "board:"+board, true, hash_table)
+				sendClient(m, s, "finalscore:"+score, true, hash_table)
 			}else{
 				if turn[hash] == 0{
 					turn[hash] = 1
 				}
 				board := ex_gnugo.ShowInfluence(hash, turn[hash], room.Size)
-				sendClient(m, s, "board:"+board, true)
+				sendClient(m, s, "board:"+board, true, hash_table)
 				score := ex_gnugo.EstimateScore(hash)
-				sendClient(m, s, "score:"+score, true)			
+				sendClient(m, s, "score:"+score, true, hash_table)			
 			}
 		case "back":
 			copyFile(hash, "tmp")
 			turn[hash] = editKifu(hash, -1)
 			board := ex_gnugo.ShowBoard(hash)
-			sendClient(m, s, "board:"+board, true)
+			sendClient(m, s, "board:"+board, true, hash_table)
 			go func(){
 				count[hash]++
 				time.Sleep(time.Second * 1)
 				if count[hash] < 2{
 					score := ex_gnugo.EstimateScore(hash)
-					sendClient(m, s, "score:"+score, true)
+					sendClient(m, s, "score:"+score, true, hash_table)
 					board := ex_gnugo.ShowInfluence(hash, turn[hash], room.Size)
-					sendClient(m, s, "board:"+board, true)
+					sendClient(m, s, "board:"+board, true, hash_table)
 					last := ex_gnugo.CheckTurn(hash, room.Size)
-					sendClient(m, s, "turn:"+last, true)
+					sendClient(m, s, "turn:"+last, true, hash_table)
 				}
 				count[hash]--
 			}()
@@ -638,17 +646,17 @@ func main() {
 			if _, err := os.Stat(head+hash+"tmp"+tail); err == nil{
 				turn[hash] = editKifu(hash, 1)
 				board := ex_gnugo.ShowBoard(hash)
-				sendClient(m, s, "board:"+board, true)
+				sendClient(m, s, "board:"+board, true, hash_table)
 				go func(){
 					count[hash]++
 					time.Sleep(time.Second * 1)
 					if count[hash] < 2{
 						score := ex_gnugo.EstimateScore(hash)
-						sendClient(m, s, "score:"+score, true)
+						sendClient(m, s, "score:"+score, true, hash_table)
 						board := ex_gnugo.ShowInfluence(hash, turn[hash], room.Size)
-						sendClient(m, s, "board:"+board, true)
+						sendClient(m, s, "board:"+board, true, hash_table)
 						last := ex_gnugo.CheckTurn(hash, room.Size)
-						sendClient(m, s, "turn:"+last, true)
+						sendClient(m, s, "turn:"+last, true, hash_table)
 					}
 					count[hash]--
 				}()
@@ -656,9 +664,9 @@ func main() {
 		case "resume":
 			turn[hash] = resumeKifu(hash)
 			board := ex_gnugo.ShowInfluence(hash, turn[hash], room.Size)
-			sendClient(m, s, "board:"+board, true)
+			sendClient(m, s, "board:"+board, true, hash_table)
 			score := ex_gnugo.EstimateScore(hash)
-			sendClient(m, s, "score:"+score, true)
+			sendClient(m, s, "score:"+score, true, hash_table)
 		case "override":
 			turn[hash] = overrideKifu(hash)
 			copyFile(hash, "tmp")
@@ -666,24 +674,137 @@ func main() {
 			copyFile(hash, "tmp")
 			turn[hash] = editKifu(hash, -100)
 			board := ex_gnugo.ShowInfluence(hash, turn[hash], room.Size)
-			sendClient(m, s, "board:"+board, true)
+			sendClient(m, s, "board:"+board, true, hash_table)
 			score := ex_gnugo.EstimateScore(hash)
-			sendClient(m, s, "score:"+score, true)
+			sendClient(m, s, "score:"+score, true, hash_table)
 		case "end":
 			showEnd(hash)
 			board := ex_gnugo.ShowInfluence(hash, turn[hash], room.Size)
-			sendClient(m, s, "board:"+board, true)
+			sendClient(m, s, "board:"+board, true, hash_table)
 			score := ex_gnugo.EstimateScore(hash)
-			sendClient(m, s, "score:"+score, true)
+			sendClient(m, s, "score:"+score, true, hash_table)
+		case "create_room":
+			var room Play
+			var challenger string
+			room.Size, _ =  strconv.Atoi(parse[2])
+			room.Komi, _ = strconv.ParseFloat(parse[3], 64)
+			how_turn := parse[4]
+			mode := parse[6]
+			switch(how_turn){
+			case "黒番":
+				how_turn = "black"
+			case "白番":
+				how_turn = "white"
+			default:
+				how_turn = "nigiri"
+			}
+			room.Hande, _ = strconv.Atoi(parse[5])
+			room.Owner = user
+			if hash, err := createRoom(room); err != nil{
+
+			}else{
+				enters[hash]++
+				ex_gnugo.InitKifu(room.Size, room.Hande, room.Komi, "*black*", "*white*", "*data*", hash)
+				switch(mode){
+				case "ai":
+					challenger = "COM"
+				case "free":
+					challenger = user
+				}
+				room = applyPlay(hash, challenger, how_turn)
+				player[playerKeys{hash, 1}] = room.Black
+				player[playerKeys{hash, -1}] = room.White
+				switch{
+				case room.Hande < 2:
+					turn[hash] = 1
+				default:
+					turn[hash] = -1
+				}
+				pass[hash] = 0
+				hash_table[user] = hash
+				if mode == "ai"{
+					if player[playerKeys{hash, turn[hash]}] == "COM"{
+						best := ex_gnugo.FirstPlay(hash, turn[hash], room.Size, 5)
+						fmt.Println(best)
+						turn[hash] *= -1
+						if best == "tt"{
+							pass[hash]++
+						}
+					}
+				}
+			}
+		case "leave":
+			hash_table[user] = ""
+			enters[hash]--
+			if(enters[hash] <= 0){
+				deleteRoom(hash)
+			}
+		case "review":
+			index, _ := strconv.Atoi(parse[1])
+			rooms := getMyRooms(user, index)
+			var rooms_info string
+			for _, v := range rooms{
+				room_info := fmt.Sprintf("%s,%s,%d,%.1f,%d,%s,%s,%s,%s",
+																	v.Name, v.Birth, v.Size, v.Komi, v.Hande, v.Black, v.White, v.Winner, v.Hash)
+				rooms_info += room_info + "<cut>"
+			}
+			sendClient(m, s, "review:"+rooms_info, false, hash_table)
+		case "openreview":
+			hash = parse[1]
+			original := getRoom(hash)
+			var old_room Play
+			old_room.Name = original.Name
+			old_room.Password = original.Password
+			old_room.Owner = "FREE"
+			old_room.Size = original.Size
+			old_room.Hande = original.Hande
+			old_room.Komi = original.Komi
+			if new_hash, err := createRoom(old_room); err != nil{
+				fmt.Println(err)
+			}else{
+				new_room := getRoom(new_hash)
+				new_room.Owner = "FREE"
+				updateRoom(new_hash, new_room)
+				head := "./assets/kifu/"
+				tail := ".sgf"
+				src, err := os.Open(head+original.Hash+tail)
+				if err != nil {
+						panic(err)
+				}
+				defer src.Close()
+		
+				dst, err := os.Create(head+new_room.Hash+tail)
+				if err != nil {
+						panic(err)
+				}
+				defer dst.Close()
+		
+				_, err = io.Copy(dst, src)
+				if  err != nil {
+						panic(err)
+				}
+
+				player[playerKeys{new_hash, 1}] = user
+				player[playerKeys{new_hash, -1}] = user
+				switch{
+				case new_room.Hande < 2:
+					turn[new_hash] = 1
+				default:
+					turn[new_hash] = -1
+				}
+				pass[new_hash] = 0
+				copyFile(new_hash, "tmp")
+				hash_table[user] = new_hash
+			}
 		}
-		last := ex_gnugo.CheckTurn(hash, room.Size)
-		sendClient(m, s, "turn:"+last, true)
+		/*last := ex_gnugo.CheckTurn(hash, room.Size)
+		sendClient(m, s, "turn:"+last, true, hash_table)*/
 	})
 
-	//router.Run(":1780")
-	router.RunTLS(":1780", 
+	router.Run(":1780")
+	/*router.RunTLS(":1780", 
 		"/etc/letsencrypt/live/goiro.net/fullchain.pem",
-		"/etc/letsencrypt/live/goiro.net/privkey.pem")
+		"/etc/letsencrypt/live/goiro.net/privkey.pem")*/
 }
 
 func execDB(db *sql.DB, q string){
@@ -783,15 +904,21 @@ func getRooms() []Play{
 	return rooms
 }
 
-func getMyRooms(user string) []Play{
+func getMyRooms(user string, index int) []Play{
 	db := gormConnect()
 	var rooms []Play
-	db.Where("black = ? OR white = ?", user, user).Find(&rooms)
+	db.Order("id").Where("black = ? OR white = ?", user, user).Find(&rooms)
 	db.Close()
 	for i, j:= 0, len(rooms)-1; i<j; i, j = i+1, j-1 {
 		rooms[i], rooms[j] = rooms[j], rooms[i]
 	}
-	return rooms
+	if len(rooms) < 5{
+		return rooms
+	}
+	if index+4 > len(rooms){
+		index = len(rooms) - 4
+	}
+	return rooms[index:index+4]
 }
 
 func applyPlay(hash, challanger, how_turn string) Play{
@@ -849,20 +976,18 @@ func gormConnect() *gorm.DB{
 	return db
 }
 
-func sendClient(m *melody.Melody, s *melody.Session, msg string, everyone bool){
+func sendClient(m *melody.Melody, s *melody.Session, msg string, everyone bool, hash_table map[string]string){
 	if everyone{
 		m.BroadcastFilter([]byte(msg), func(q *melody.Session) bool{
-			q_hash := strings.Split(q.Request.URL.Path, "/")[3]
-			s_hash := strings.Split(s.Request.URL.Path, "/")[3]
-			return q_hash == s_hash
+			parse_q := strings.Split(string(q.Request.URL.Path), "/")[2]
+			parse_s := strings.Split(string(s.Request.URL.Path), "/")[2]
+			fmt.Printf("send client\n")
+			fmt.Println(parse_q)
+			return hash_table[parse_q] == hash_table[parse_s]
 		})
 	}else{
 		m.BroadcastFilter([]byte(msg), func(q *melody.Session) bool{
-			q_user := strings.Split(q.Request.URL.Path, "/")[2]
-			s_user := strings.Split(s.Request.URL.Path, "/")[2]
-			q_hash := strings.Split(q.Request.URL.Path, "/")[3]
-			s_hash := strings.Split(s.Request.URL.Path, "/")[3]
-			return q_user == s_user && q_hash == s_hash
+			return q.Request.URL.Path == s.Request.URL.Path
 		})
 	}
 }
