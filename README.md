@@ -4,7 +4,7 @@ https://goiro.net/
 ## Licence
 These source codes were released under the GNU GENERAL PUBLIC LICENSE Version 3 (GPLv3). Please see LICENSE in this repository.
 
-However, note that some files are 
+However, note that some files are hidden for security.
 
 
 gnugo-3.8/ was made based on GNU Go (https://www.gnu.org/software/gnugo/), and original source codes were released GPLv3.
