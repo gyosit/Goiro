@@ -4,6 +4,8 @@ https://goiro.net/
 ## Licence
 These source codes were released under the GNU GENERAL PUBLIC LICENSE Version 3 (GPLv3). Please see LICENSE in this repository.
 
+However, note that some files are 
+
 
 gnugo-3.8/ was made based on GNU Go (https://www.gnu.org/software/gnugo/), and original source codes were released GPLv3.
 
@@ -16,7 +18,7 @@ Copyright (C) 1989 Man Li, Wayne Iba, Daniel Bump, David Denholm, Gunnar Farneb�
 
 石の繋がりというアイデアはとろろ 様 (Twitter ユーザー名:@tororo2048)をリスペクトしたものです。
 
-現在 (2021/8/15)は試作だんかいですが、最終的には初心者～経験者が楽しく対戦、交流できる場にしたいと思っています。
+現在 (2021/8/15)は試作段階ですが、最終的には初心者～経験者が楽しく対戦、交流できる場にしたいと思っています。
 
 ## 連絡先
 Twitter: @Mr_isoy
