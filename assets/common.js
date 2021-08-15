@@ -100,6 +100,30 @@ var vscom_f = function(){
   deleteImage(texture, "button");
   deleteImage(texture, "text");
   
+  putText(0, 50, stage, "強さ", font_style, "text");
+  putText(350, 50, stage, "普通", font_style, "level");
+  makeButton(300, 50, stage, "back", function(){
+    let t = getText("level");
+    switch(t){
+      case "普通":
+        editText("level", "強い");
+        break;
+      case "強い":
+        editText("level", "普通");
+        break;
+    }
+  });
+  makeButton(550, 50, stage, "forward", function(){
+    let t = getText("level");
+    switch(t){
+      case "普通":
+        editText("level", "強い");
+        break;
+      case "強い":
+        editText("level", "普通");
+        break;
+    }
+  });
   putText(0, 100, stage, "盤のサイズ", font_style, "text");
   putText(350, 100, stage, "9", font_style, "b_size");
   makeButton(300, 100, stage, "back", function(){
@@ -203,6 +227,7 @@ var vscom_f = function(){
   makeButton(100, 350, stage, "backarrow", resize);
   makeButton(300, 350, stage, "vscom_start", function(){
     scene = "play";
+    let level = getText("level");
     board_size = getText("b_size");
     let komi = getText("komi");
     let turn_set = getText("turn_set");
@@ -214,7 +239,8 @@ var vscom_f = function(){
                   komi+" "+
                   turn_set+" "+
                   hande+" "+
-                  mode);
+                  mode+" "+
+                  level);
     resize();
     socket.send("show");
   });

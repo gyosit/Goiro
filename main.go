@@ -91,6 +91,7 @@ func main() {
 	pass := make(map[string]int)
 	count := make(map[string]int)
 	hash_table := make(map[string]string)
+	goiro_level := make(map[string]int)
 
 	// Session
 	//store := cookie.NewStore([]byte("secret"))
@@ -128,7 +129,7 @@ func main() {
 		}
 		if mode == "ai"{
 			if player[playerKeys{hash, turn[hash]}] == "COM"{
-				best := ex_gnugo.FirstPlay(hash, turn[hash], room.Size, 5)
+				best := ex_gnugo.FirstPlay(hash, turn[hash], room.Size, 5, goiro_level[hash])
 				turn[hash] *= -1
 				if best == "tt"{
 					pass[hash]++
@@ -487,7 +488,7 @@ func main() {
 				last := ex_gnugo.CheckTurn(hash, room.Size)
 				sendClient(m, s, "turn:"+last, true, hash_table)
 				sendClient(m, s, "player:"+room.Black+","+room.White, true, hash_table)
-				score, board, best := ex_gnugo.Genmove(hash, turn[hash], i, room.Size, level)
+				score, board, best := ex_gnugo.Genmove(hash, turn[hash], i, room.Size, level, goiro_level[hash])
 				c_b, c_w = ex_gnugo.CapturedStone(hash)
 				sendClient(m, s, "board:"+board, true, hash_table)
 				sendClient(m, s, "captured:"+c_b+","+c_w, true, hash_table)
@@ -526,7 +527,7 @@ func main() {
 			}
 			sendClient(m, s, "pass", true, hash_table)
 			pass[hash]++
-			ex_gnugo.Pass(hash, turn[hash], room.Size, 0)
+			ex_gnugo.Pass(hash, turn[hash], room.Size, 0, goiro_level[hash])
 			turn[hash] *= -1
 			var score string
 			if pass[hash] > 1 && player[playerKeys{hash, -1}] != player[playerKeys{hash, 1}]{
@@ -550,7 +551,7 @@ func main() {
 			pass[hash]++
 			level, _ := strconv.Atoi(parse[1])
 			if pass[hash] < 2{
-				score, board, best := ex_gnugo.Pass(hash, turn[hash], room.Size, level)
+				score, board, best := ex_gnugo.Pass(hash, turn[hash], room.Size, level, goiro_level[hash])
 				if best == "tt"{
 					// End this game by AI
 					sendClient(m, s, "busy", true, hash_table)
@@ -568,7 +569,7 @@ func main() {
 				}
 			}else{
 				// End this game by the user
-				ex_gnugo.Pass(hash, turn[hash], 9, 0)
+				ex_gnugo.Pass(hash, turn[hash], 9, 0, goiro_level[hash])
 				sendClient(m, s, "busy", true, hash_table)
 				score := ex_gnugo.FinalScore(hash)
 				endGame(hash, score)
@@ -690,6 +691,7 @@ func main() {
 			room.Komi, _ = strconv.ParseFloat(parse[3], 64)
 			how_turn := parse[4]
 			mode := parse[6]
+			level := parse[7]
 			switch(how_turn){
 			case "黒番":
 				how_turn = "black"
@@ -711,6 +713,12 @@ func main() {
 				case "free":
 					challenger = user
 				}
+				switch(level){
+				case "普通":
+					goiro_level[hash] = -1
+				case "強い":
+					goiro_level[hash] = 1
+				}
 				room = applyPlay(hash, challenger, how_turn)
 				player[playerKeys{hash, 1}] = room.Black
 				player[playerKeys{hash, -1}] = room.White
@@ -724,7 +732,7 @@ func main() {
 				hash_table[user] = hash
 				if mode == "ai"{
 					if player[playerKeys{hash, turn[hash]}] == "COM"{
-						best := ex_gnugo.FirstPlay(hash, turn[hash], room.Size, 5)
+						best := ex_gnugo.FirstPlay(hash, turn[hash], room.Size, 5, goiro_level[hash])
 						fmt.Println(best)
 						turn[hash] *= -1
 						if best == "tt"{

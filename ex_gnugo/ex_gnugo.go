@@ -20,10 +20,16 @@ func integralCmd(cmds []string) string{
 	return res
 }
 
-func ExecCommand(order string) []string{
+func ExecCommand(param ...string) []string{
 	var res []string
+	var goiro_level string
+	if len(param) == 1{
+		goiro_level = "1"
+	}else{
+		goiro_level = param[1]
+	}
 	//cmd := "loadsgf test.sgf\\ninitial_influence white influence_regions"
-	cmd := "echo \"\n" + order + "\" | gnugo --mode gtp"
+	cmd := "echo \"\n" + param[0] + "\" | ./gnugo-3.8/interface/gnugo --mode gtp --goiro-level " + goiro_level
 	out, _ := exec.Command("sh", "-c", cmd).Output()
 	s := string(out)
 	slice := strings.Split(s, "\n")
@@ -62,7 +68,7 @@ func PlayStone(hash string, color int, i int, size int, ai int) (string,string,s
 	}
 }
 
-func Genmove(hash string, color int, i int, size int, ai int) (string,string,string){
+func Genmove(hash string, color int, i int, size int, ai int, goiro_level int) (string,string,string){
 	s_color := map[int]string{1:"black", -1:"white"}
 	cmds := []string{"loadsgf ./assets/kifu/"+hash+".sgf",
 										"level "+strconv.Itoa(ai),
@@ -71,7 +77,11 @@ func Genmove(hash string, color int, i int, size int, ai int) (string,string,str
 										"initial_influence "+s_color[color]+" influence_regions"}
 	
 	cmd := integralCmd(cmds)
-	res := ExecCommand(cmd)
+	goiro_level_str := strconv.Itoa(goiro_level)
+	res := ExecCommand(cmd, goiro_level_str)
+	if len(res) < (9+size+1){
+		return "", "", "tt" 
+	}
 	score := res[6]
 	best_i, _ := strconv.Atoi(UnTransCoordinate(res[4], size, true))
 	best := TransCoordinate(best_i, size, false)
@@ -80,37 +90,40 @@ func Genmove(hash string, color int, i int, size int, ai int) (string,string,str
 	return score, influence, best
 }
 
-func FirstPlay(hash string, color int, size int, level int) string{
+func FirstPlay(hash string, color int, size int, level int, goiro_level int) string{
 	s_color := map[int]string{1:"black", -1:"white"}
 	cmds := []string{"loadsgf ./assets/kifu/"+hash+".sgf",
 										"level "+strconv.Itoa(level),
 										"genmove_"+s_color[color]}
 	cmd := integralCmd(cmds)
-	res:= ExecCommand(cmd)
+	goiro_level_str := strconv.Itoa(goiro_level)
+	res:= ExecCommand(cmd, goiro_level_str)
 	best_i, _ := strconv.Atoi(UnTransCoordinate(res[4], size, true))
 	best := TransCoordinate(best_i, size, false)
 	uploadKifu(s_color[color], best, hash)
 	return best
 }
 
-func Pass(hash string, color int, size int, level int) (string, string, string){
+func Pass(hash string, color int, size int, level int, goiro_level int) (string, string, string){
 	s_color := map[int]string{1:"black", -1:"white"}
 	uploadKifu(s_color[color], "tt", hash)
 	var score, best, influence string
-	if level > 0{
-		cmds := []string{"loadsgf ./assets/kifu/"+hash+".sgf",
-										"level "+strconv.Itoa(level),
-										"genmove_"+s_color[color*(-1)],
-										"estimate_score",
-										"initial_influence "+s_color[color]+" influence_regions"}
-		cmd := integralCmd(cmds)
-		res := ExecCommand(cmd)
-		score = res[6]
-		best_i, _ := strconv.Atoi(UnTransCoordinate(res[4], size, true))
-		best = TransCoordinate(best_i, size, false)
-		uploadKifu(s_color[color*(-1)], best, hash)
-		influence = parseBoard2(res[8:9+size])
+	cmds := []string{"loadsgf ./assets/kifu/"+hash+".sgf",
+									"level "+strconv.Itoa(level),
+									"genmove_"+s_color[color*(-1)],
+									"estimate_score",
+									"initial_influence "+s_color[color]+" influence_regions"}
+	cmd := integralCmd(cmds)
+	goiro_level_str := strconv.Itoa(goiro_level)
+	res := ExecCommand(cmd, goiro_level_str)
+	if len(res) < (9+size+1){
+		return "", "", "tt" 
 	}
+	score = res[6]
+	best_i, _ := strconv.Atoi(UnTransCoordinate(res[4], size, true))
+	best = TransCoordinate(best_i, size, false)
+	uploadKifu(s_color[color*(-1)], best, hash)
+	influence = parseBoard2(res[8:9+size])
 	return score, influence, best
 }
 
