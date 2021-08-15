@@ -7,7 +7,7 @@ These source codes were released under the GNU GENERAL PUBLIC LICENSE Version 3 
 
 gnugo-3.8/ was made based on GNU Go (https://www.gnu.org/software/gnugo/), and original source codes were released GPLv3.
 
-GNU Go license is below:
+GNU Go copyright notice is below:
 
 Copyright (C) 1989 Man Li, Wayne Iba, Daniel Bump, David Denholm, Gunnar Farnebäck, Nils Lohner, Jerome Dumonteil, Tommy Thorn, Nicklas Ekstrand, Inge Wallin, Thomas Traber, Douglas Ridgway, Teun Burgers, Tanguy Urvoy, Thien-Thi Nguyen, Heikki Levanto, Mark Vytlacil, Adriaan van Kessel, Wolfgang Manner, Jens Yllman, Don Dailey, Måns Ullerstam, Arend Bayer, Trevor Morris, Evan Berggren Daniel, Fernando Portela, Paul Pogonyshev, S.P. Lee and Stephane Nicolet, Martin Holters, Grzegorz Leszczynski and Lee Fisher
 
