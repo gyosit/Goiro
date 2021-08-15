@@ -1,7 +1,7 @@
 # Goiro
 https://goiro.net/
 
-## Licence
+## License
 These source codes were released under the GNU GENERAL PUBLIC LICENSE Version 3 (GPLv3). Please see LICENSE in this repository.
 
 However, note that some files are hidden for security.
