@@ -809,17 +809,10 @@ func main() {
 		sendClient(m, s, "turn:"+last, true, hash_table)*/
 	})
 
-<<<<<<< HEAD
 	//router.Run(":1780")
 	router.RunTLS(":1780", 
 		"/etc/letsencrypt/live/goiro.net/fullchain.pem",
 		"/etc/letsencrypt/live/goiro.net/privkey.pem")
-=======
-	router.Run(":1780")
-	/*router.RunTLS(":1780", 
-		"/etc/letsencrypt/live/goiro.net/fullchain.pem",
-		"/etc/letsencrypt/live/goiro.net/privkey.pem")*/
->>>>>>> 0e7c278d9458294607d47ab6c512b3ae55b628c3
 }
 
 func execDB(db *sql.DB, q string){
