@@ -332,7 +332,12 @@ var vsfree_f = function(){
                   komi+" "+
                   "ignore "+
                   hande+" "+
+<<<<<<< HEAD
                   mode);
+=======
+                  mode+" "+
+                  1);
+>>>>>>> 0e7c278d9458294607d47ab6c512b3ae55b628c3
     resize();
     socket.send("show");
   });
@@ -365,6 +370,10 @@ let texture = {"board": [],
               "turn": [],
               "text": [],
               "button_home": []};
+<<<<<<< HEAD
+=======
+let links = [];
+>>>>>>> 0e7c278d9458294607d47ab6c512b3ae55b628c3
 let info_y = {"button": 5,
               "button2": 7,
               "button3": 8,
@@ -387,8 +396,13 @@ let b_events = {"pass": pass_f,
                 "vsfree": vsfree_f, };
 font_style = {font:'60pt Arial', fill:'black'};
 
+<<<<<<< HEAD
 var url = "wss://" + window.location.host + ":1780" + "/connect/" + username+ "/ws";
 //var url = "ws://" + window.location.host + "/connect/" + username+ "/ws";
+=======
+//var url = "wss://" + window.location.host + ":1780" + "/connect/" + username+ "/ws";
+var url = "ws://" + window.location.host + "/connect/" + username+ "/ws";
+>>>>>>> 0e7c278d9458294607d47ab6c512b3ae55b628c3
 var socket = new WebSocket(url);
 
 // Disconnect event
@@ -600,6 +614,10 @@ socket.onmessage = function(msg){
       }
       i++;
     })
+<<<<<<< HEAD
+=======
+    deletelinks();
+>>>>>>> 0e7c278d9458294607d47ab6c512b3ae55b628c3
     deleteImage(texture, "message");
     break;
   }case "pass":{
@@ -1036,6 +1054,10 @@ function putImage(x, y, stage, name, type){
 function makeImage(x, y, stage, color, type, alpha, size, board_size){
   x = x * (size/(board_size-1))+margin/2;
   y = y * (size/(board_size-1))+margin/2;
+<<<<<<< HEAD
+=======
+  let x1, x2, y1, y2;
+>>>>>>> 0e7c278d9458294607d47ab6c512b3ae55b628c3
   var ds = size/(board_size-1);
   let line_color; 
   switch(type){
@@ -1106,6 +1128,10 @@ function makeImage(x, y, stage, color, type, alpha, size, board_size){
     break;
   case "link3":
     ds = ds/4;
+<<<<<<< HEAD
+=======
+    [x1, x2, y1, y2] = [x+ds/1, x+ds*4-ds/1, y, y+ds*4];
+>>>>>>> 0e7c278d9458294607d47ab6c512b3ae55b628c3
     var material = new PIXI.Graphics()
     .beginFill(color, alpha)
     .drawPolygon([
@@ -1118,6 +1144,10 @@ function makeImage(x, y, stage, color, type, alpha, size, board_size){
     break;
   case "link4":
     ds = ds/4;
+<<<<<<< HEAD
+=======
+    [x1, x2, y1, y2] = [x-ds/1, x-ds*4+ds/1, y, y+ds*4];
+>>>>>>> 0e7c278d9458294607d47ab6c512b3ae55b628c3
     var material = new PIXI.Graphics()
     .beginFill(color, alpha)
     .drawPolygon([
@@ -1130,6 +1160,14 @@ function makeImage(x, y, stage, color, type, alpha, size, board_size){
     break;
   case "link5":
     ds = ds/2;
+<<<<<<< HEAD
+=======
+    x1 = x-ds/3;
+    x2 = x+ds/3;
+    y1 = y;
+    y2 =  y+ds*4;
+    [x1, x2, y1, y2] = [x-ds/3, x+ds/3, y, y+ds*4];
+>>>>>>> 0e7c278d9458294607d47ab6c512b3ae55b628c3
     var material = new PIXI.Graphics()
     .beginFill(color, alpha)
     .drawPolygon([
@@ -1142,6 +1180,10 @@ function makeImage(x, y, stage, color, type, alpha, size, board_size){
     break;
   case "link6":
     ds = ds/2;
+<<<<<<< HEAD
+=======
+    [x1, x2, y1, y2] = [x, x+ds*4, y-ds/3, y+ds/3];
+>>>>>>> 0e7c278d9458294607d47ab6c512b3ae55b628c3
     var material = new PIXI.Graphics()
     .beginFill(color, alpha)
     .drawPolygon([
@@ -1154,6 +1196,10 @@ function makeImage(x, y, stage, color, type, alpha, size, board_size){
     break;
   case "link7":
     ds = ds/2;
+<<<<<<< HEAD
+=======
+    [x1, x2, y1, y2] = [x-ds/6, x+ds/6, y, y+ds*6];
+>>>>>>> 0e7c278d9458294607d47ab6c512b3ae55b628c3
     var material = new PIXI.Graphics()
     .beginFill(color, alpha)
     .drawPolygon([
@@ -1166,6 +1212,10 @@ function makeImage(x, y, stage, color, type, alpha, size, board_size){
     break;
   case "link8":
     ds = ds/2;
+<<<<<<< HEAD
+=======
+    [x1, x2, y1, y2] = [x, x+ds*6, y-ds/6, y+ds/6];
+>>>>>>> 0e7c278d9458294607d47ab6c512b3ae55b628c3
     var material = new PIXI.Graphics()
     .beginFill(color, alpha)
     .drawPolygon([
@@ -1178,6 +1228,10 @@ function makeImage(x, y, stage, color, type, alpha, size, board_size){
     break;
   case "link9":
     ds = ds/2;
+<<<<<<< HEAD
+=======
+    [x1, x2, y1, y2] = [x-ds/9, x+ds/9, y, y+ds*8];
+>>>>>>> 0e7c278d9458294607d47ab6c512b3ae55b628c3
     var material = new PIXI.Graphics()
     .beginFill(color, alpha)
     .drawPolygon([
@@ -1190,6 +1244,10 @@ function makeImage(x, y, stage, color, type, alpha, size, board_size){
     break;
   case "link10":
     ds = ds/2;
+<<<<<<< HEAD
+=======
+    [x1, x2, y1, y2] = [x, x+ds*8, y-ds/9, y+ds/9];
+>>>>>>> 0e7c278d9458294607d47ab6c512b3ae55b628c3
     var material = new PIXI.Graphics()
     .beginFill(color, alpha)
     .drawPolygon([
@@ -1202,6 +1260,10 @@ function makeImage(x, y, stage, color, type, alpha, size, board_size){
     break;
   case "link11":
     ds = ds/16;
+<<<<<<< HEAD
+=======
+    [x1, x2, y1, y2] = [x+ds/1, x+ds*32-ds/1, y, y+ds*16];
+>>>>>>> 0e7c278d9458294607d47ab6c512b3ae55b628c3
     var material = new PIXI.Graphics()
     .beginFill(color, alpha)
     .drawPolygon([
@@ -1214,6 +1276,10 @@ function makeImage(x, y, stage, color, type, alpha, size, board_size){
     break;
   case "link12":
     ds = ds/16;
+<<<<<<< HEAD
+=======
+    [x1, x2, y1, y2] = [x+ds/1, x+ds*16-ds/1, y, y+ds*32];
+>>>>>>> 0e7c278d9458294607d47ab6c512b3ae55b628c3
     var material = new PIXI.Graphics()
     .beginFill(color, alpha)
     .drawPolygon([
@@ -1226,6 +1292,10 @@ function makeImage(x, y, stage, color, type, alpha, size, board_size){
     break;
   case "link13":
     ds = ds/16;
+<<<<<<< HEAD
+=======
+    [x1, x2, y1, y2] = [x-ds/1, x-ds*16+ds/1, y, y+ds*32];
+>>>>>>> 0e7c278d9458294607d47ab6c512b3ae55b628c3
     var material = new PIXI.Graphics()
     .beginFill(color, alpha)
     .drawPolygon([
@@ -1238,6 +1308,10 @@ function makeImage(x, y, stage, color, type, alpha, size, board_size){
     break;
   case "link14":
     ds = ds/16;
+<<<<<<< HEAD
+=======
+    [x1, x2, y1, y2] = [x-ds/1, x-ds*32+ds/1, y, y+ds*16];
+>>>>>>> 0e7c278d9458294607d47ab6c512b3ae55b628c3
     var material = new PIXI.Graphics()
     .beginFill(color, alpha)
     .drawPolygon([
@@ -1249,9 +1323,19 @@ function makeImage(x, y, stage, color, type, alpha, size, board_size){
     .endFill();
     break;
   }
+<<<<<<< HEAD
   
   stage.addChild(material);
   texture[type].push(material);
+=======
+  stage.addChild(material);
+  texture[type].push(material);
+  if(type.indexOf("link") != -1 && type != "link1" && type != "link2" && type != "link3" && type != "link4"){
+    links.push([x1, x2, y1, y2, type, texture[type].length-1]);
+    console.log(texture[type]);
+    console.log("links:", links);
+  }
+>>>>>>> 0e7c278d9458294607d47ab6c512b3ae55b628c3
 }
 
 function makeText(x, stage, word, style, type){
@@ -1310,6 +1394,10 @@ function makeButton(x, y, stage, name, func){
 }
 
 function deleteImage(texture, type){
+<<<<<<< HEAD
+=======
+  links = [];
+>>>>>>> 0e7c278d9458294607d47ab6c512b3ae55b628c3
   if(type == "all"){
     Object.keys(texture).forEach(v => {
       texture[v].forEach(vv => {
@@ -1325,6 +1413,48 @@ function deleteImage(texture, type){
   }
   renderer.render(stage);
 }
+<<<<<<< HEAD
+=======
+
+function overLink(v1, v2){
+      if(v1 == v2){
+        return false;
+      }
+      if(v1[4] == "link1" || v1[4] == "link2" || v2[4] == "link1" || v2[4] == "link2"){
+        return false;
+      }
+      s = (v1[0] - v1[0]) * (v2[2] - v1[0]) - (v1[2] - v1[3]) * (v2[0] - v1[0]);
+      t = (v1[0] - v1[1]) * (v2[3] - v1[2]) - (v1[2] - v1[3]) * (v2[1] - v1[0]);
+      if(s * t > 0){
+        return false;
+      }
+      s = (v2[0] - v2[1]) * (v1[2] - v2[2]) - (v2[2] - v2[3]) * (v1[0] - v2[0]);
+      t = (v2[0] - v2[1]) * (v1[3] - v2[2]) - (v2[2] - v2[3]) * (v1[1] - v2[0]);
+      if (s * t > 0){
+        return false;
+      }
+      return true;
+}
+
+function deletelinks(){
+  let over = false;
+  let i = 0;
+  links.forEach(v1 => {
+    console.log("v2:", links.slice(i+1));
+    links.slice(i+1).forEach(v2 => {
+      over = overLink(v1, v2);
+      console.log("over:", over);
+      if(over){
+        texture[v1[4]][v1[5]].visible = false;
+        texture[v2[4]][v2[5]].visible = false;
+      }
+    })
+    i++;
+  })
+  
+  renderer.render(stage);
+}
+>>>>>>> 0e7c278d9458294607d47ab6c512b3ae55b628c3
  
 function putStone(e) {
   let position = e.data.getLocalPosition(stage);
