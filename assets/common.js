@@ -389,8 +389,8 @@ let b_events = {"pass": pass_f,
                 "vsfree": vsfree_f, };
 font_style = {font:'60pt Arial', fill:'black'};
 
-var url = "wss://" + window.location.host + ":1780" + "/connect/" + username+ "/ws";
-//var url = "ws://" + window.location.host + "/connect/" + username+ "/ws";
+//var url = "wss://" + window.location.host + ":1780" + "/connect/" + username+ "/ws";
+var url = "ws://" + window.location.host + "/connect/" + username+ "/ws";
 var socket = new WebSocket(url);
 
 // Disconnect event
@@ -744,6 +744,9 @@ socket.onmessage = function(msg){
       //putText(100, review_times*200, stage, "${size}路盤/コミ${komi}目/ハンデ${hande}子\n●${black}/○${white}");
       console.log(stage);
       break;
+    }case "review_ind":{
+      objs = msg['data'].split(":")[1];
+      review_index = parseInt(objs, 10);
     }
   }
   renderer.render(stage);
@@ -964,7 +967,7 @@ function initReview(){
   });
   makeButton(10, 100, stage, "uparrow", function(){
     review_times = 0;
-    review_index = Math.max(review_times-4, 0);
+    review_index = Math.max(review_index-4, 0);
     console.log(review_index);
     resize();
   });

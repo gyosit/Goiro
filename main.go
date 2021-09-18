@@ -257,12 +257,6 @@ func main() {
 		ctx.HTML(200, "message.html", gin.H{})
 	})
 
-	router.GET("/review", func(ctx *gin.Context){
-		user := SessionManager.GetUser(ctx)
-		rooms := getMyRooms(user, 0)
-		ctx.HTML(200, "review.html", gin.H{"user": user, "rooms": rooms})
-	})
-
 	router.POST("/regist", func(ctx *gin.Context){
 		var form User
 		username := ctx.PostForm("username")
@@ -423,9 +417,10 @@ func main() {
 		room := getRoom(hash)
 		parse := strings.Split(string(msg), " ")
 		senrigan := false
-		fmt.Printf(parse[0])
 		fmt.Println(turn[hash])
+		fmt.Println(senrigan)
 		_, err := os.Stat(head+hash+"_"+user+tail); if err == nil{
+			fmt.Printf("Senrigan now::\n")
 			senrigan = true
 			hash = hash + "_" + user
 			pass[hash] = 0
@@ -446,7 +441,7 @@ func main() {
 			}
 		}
 		fmt.Println(hash)
-
+		fmt.Printf("The order is %s\n", parse[0])
 		switch parse[0]{
 		case "coordinate":
 			if user != player[playerKeys{hash, turn[hash]}]{
@@ -517,6 +512,7 @@ func main() {
 			fmt.Printf(res)
 			sendClient(m, s, "bless:"+res, false, hash_table)
 		case "pass":
+			fmt.Printf("PAAAAAS!")
 			if user != player[playerKeys{hash, turn[hash]}]{
 				break
 			}
@@ -527,7 +523,7 @@ func main() {
 			}
 			sendClient(m, s, "pass", true, hash_table)
 			pass[hash]++
-			ex_gnugo.Pass(hash, turn[hash], room.Size, 0, goiro_level[hash])
+			ex_gnugo.Pass_nonai(hash, turn[hash])
 			turn[hash] *= -1
 			var score string
 			if pass[hash] > 1 && player[playerKeys{hash, -1}] != player[playerKeys{hash, 1}]{
@@ -744,19 +740,21 @@ func main() {
 		case "leave":
 			hash_table[user] = ""
 			enters[hash]--
+			fmt.Printf("In this room:%d\n", enters[hash])
 			if(enters[hash] <= 0){
 				deleteRoom(hash)
 			}
 		case "review":
 			index, _ := strconv.Atoi(parse[1])
-			rooms := getMyRooms(user, index)
+			rooms, real_index := getMyRooms(user, index)
 			var rooms_info string
 			for _, v := range rooms{
 				room_info := fmt.Sprintf("%s,%s,%d,%.1f,%d,%s,%s,%s,%s",
-																	v.Name, v.Birth, v.Size, v.Komi, v.Hande, v.Black, v.White, v.Winner, v.Hash)
+											v.Name, v.Birth, v.Size, v.Komi, v.Hande, v.Black, v.White, v.Winner, v.Hash)
 				rooms_info += room_info + "<cut>"
 			}
 			sendClient(m, s, "review:"+rooms_info, false, hash_table)
+			sendClient(m, s, "review_ind:"+strconv.Itoa(real_index), false, hash_table)
 		case "openreview":
 			hash = parse[1]
 			original := getRoom(hash)
@@ -809,10 +807,10 @@ func main() {
 		sendClient(m, s, "turn:"+last, true, hash_table)*/
 	})
 
-	//router.Run(":1780")
-	router.RunTLS(":1780", 
+	router.Run(":1780")
+	/*router.RunTLS(":1780", 
 		"/etc/letsencrypt/live/goiro.net/fullchain.pem",
-		"/etc/letsencrypt/live/goiro.net/privkey.pem")
+		"/etc/letsencrypt/live/goiro.net/privkey.pem")*/
 }
 
 func execDB(db *sql.DB, q string){
@@ -912,7 +910,7 @@ func getRooms() []Play{
 	return rooms
 }
 
-func getMyRooms(user string, index int) []Play{
+func getMyRooms(user string, index int) ([]Play, int){
 	db := gormConnect()
 	var rooms []Play
 	db.Order("id").Where("black = ? OR white = ?", user, user).Find(&rooms)
@@ -921,12 +919,12 @@ func getMyRooms(user string, index int) []Play{
 		rooms[i], rooms[j] = rooms[j], rooms[i]
 	}
 	if len(rooms) < 5{
-		return rooms
+		return rooms, 0
 	}
 	if index+4 > len(rooms){
 		index = len(rooms) - 4
 	}
-	return rooms[index:index+4]
+	return rooms[index:index+4], index
 }
 
 func applyPlay(hash, challanger, how_turn string) Play{

@@ -127,6 +127,11 @@ func Pass(hash string, color int, size int, level int, goiro_level int) (string,
 	return score, influence, best
 }
 
+func Pass_nonai(hash string, color int){
+	s_color := map[int]string{1:"black", -1:"white"}
+	uploadKifu(s_color[color], "tt", hash)
+}
+
 func Resign(hash string, color int) string{
 	var s_color string
 	switch color{
