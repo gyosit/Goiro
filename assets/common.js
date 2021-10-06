@@ -1020,7 +1020,6 @@ function loadImage(x, y, stage, name){
   texture["button"].push(objSprite);
 }
 
-function putImage(x, y, stage, name, type){
 function putImage(x, y, stage, name, type, alpha=1){
   let X, Y;
   X = x;
