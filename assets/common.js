@@ -1034,6 +1034,7 @@ function putImage(x, y, stage, name, type){
       objSprite.y = y;
       objSprite.scale.x = 0.4;
       objSprite.scale.y = 0.4;
+      objSprite.alpha = alpha;
       stage.addChild(objSprite);
       addTexture(type, objSprite);
     });
@@ -1056,6 +1057,19 @@ function makeImage(x, y, stage, color, type, alpha, size, board_size){
         x-ds, y+ds,
       ])
       .endFill();
+    // squid
+    // if(true){
+    //   break;
+    // }
+    // x -= ds;
+    // y -= ds;
+    // let tmp_color;
+    // if(color == 0xdc143c){
+    //   tmp_color = "inkb";
+    // }else{
+    //   tmp_color = "inkw";
+    // }
+    // putImage(x, y, stage, tmp_color, type, alpha*8)
     break;
   case "stone":
     if(color == 0x000000){
@@ -1272,8 +1286,10 @@ function makeImage(x, y, stage, color, type, alpha, size, board_size){
     .endFill();
     break;
   }
-  stage.addChild(material);
-  texture[type].push(material);
+  if(material != undefined){
+    stage.addChild(material);
+    texture[type].push(material);
+  }
   if(type.indexOf("link") != -1 && type != "link1" && type != "link2" && type != "link3" && type != "link4"){
     links.push([x1, x2, y1, y2, type, texture[type].length-1]);
     console.log(texture[type]);
