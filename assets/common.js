@@ -1021,6 +1021,7 @@ function loadImage(x, y, stage, name){
 }
 
 function putImage(x, y, stage, name, type){
+function putImage(x, y, stage, name, type, alpha=1){
   let X, Y;
   X = x;
   Y = y;
