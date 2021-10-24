@@ -408,7 +408,8 @@ func main() {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		name := json.Name+json.Date
+		hash := hash_table[json.Name]
+		name := hash+json.Date
 		name = strings.Replace(name, "/", "_", -1)
 		name = strings.Replace(name, ":", "_", -1)
 		name = strings.Replace(name, " ", "", -1)
