@@ -270,6 +270,11 @@ func main() {
 		ctx.File("./assets/thumbnail/" + name)
 	})
 
+	router.GET("/html/:hash", func(ctx *gin.Context){
+		hash := ctx.Param("hash")
+		ctx.File("./assets/html/"+hash+".html")
+	})
+
 	router.POST("/regist", func(ctx *gin.Context){
 		var form User
 		username := ctx.PostForm("username")
@@ -1267,8 +1272,12 @@ func decode(str, name string){
 func createTextfile(name string){
 	file, _ := os.Create("./assets/html/" + name + ".html")
 	defer file.Close()
-	lines := []string{"<meta name=\"twitter:image\" content=\"https://goiro.net/thumbnail/" + name + ".png\" />\n",
-					 "<script>setTimeout(function () {window.location = 'https://goiro.net';}, 100);</script>\n"}
+	lines := []string{"<meta name=\"twitter:card\" content=\"summary_large_image\" />",
+					  "<meta name=\"twitter:site\" content=\"Mr_isoy\" />",
+					  "<meta name=\"twitter:title\" content=\"碁色\" />",
+					  "<meta name=\"twitter:description\" content=\"碁色(ごいろ)は初心者でもわかりやすい囲碁のゲームです。\" />",
+					  "<meta name=\"twitter:image\" content=\"https://goiro.net/thumbnail/" + name + ".png\" />\n",
+					  "<script>setTimeout(function () {window.location = 'https://goiro.net';}, 100);</script>\n"}
 	for _, line := range lines{
 		b := []byte(line)
 		file.Write(b)
