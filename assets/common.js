@@ -396,8 +396,8 @@ var b_events = {"pass": pass_f,
                 "vsfree": vsfree_f, };
 var font_style = {font:'60pt Arial', fill:'black'};
 
-//var url = "wss://" + window.location.host + ":1780" + "/connect/" + username+ "/ws";
-var url = "ws://" + window.location.host + "/connect/" + username+ "/ws";
+var url = "wss://" + window.location.host + ":1780" + "/connect/" + username+ "/ws";
+//var url = "ws://" + window.location.host + "/connect/" + username+ "/ws";
 var socket = new WebSocket(url);
 var xhr = new XMLHttpRequest();
 
