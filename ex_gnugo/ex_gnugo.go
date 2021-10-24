@@ -35,9 +35,11 @@ func ExecCommand(param ...string) []string{
 	slice := strings.Split(s, "\n")
 	fmt.Printf("\n")
 	for i, v := range slice{
-		v = strings.Replace(v, "= ", "", -1)
-		res = append(res, v)
-		fmt.Println(i, v)
+		//v = strings.Replace(v, "= ", "", -1)
+		if len(v) > 0 {
+			res = append(res, v)
+			fmt.Println(i, v)
+		}
 	}
 	return res
 }
@@ -59,11 +61,13 @@ func PlayStone(hash string, color int, i int, size int, ai int) (string,string,s
 										"play "+s_color[color]+" "+point_gnugo}
 	cmd := integralCmd(cmds)
 	res := ExecCommand(cmd)
-	if res[2] != "? illegal move" {
+	if len(res) < 1{
 		point := TransCoordinate(i, size, false)
 		uploadKifu(s_color[color], point, hash)
+		fmt.Printf(point)
 		return "Regal", "", "", "best"
 	}else{
+		fmt.Printf("Illegel move!")
 		return "Illegal", "", "", ""
 	}
 }
@@ -74,19 +78,19 @@ func Genmove(hash string, color int, i int, size int, ai int, goiro_level int) (
 										"level "+strconv.Itoa(ai),
 										"genmove_"+s_color[color*(-1)],
 										"estimate_score",
-										"initial_influence "+s_color[color]+" influence_regions"}
+										"initial_goiroinfluence "+s_color[color]+" influence_regions"}
 	
 	cmd := integralCmd(cmds)
 	goiro_level_str := strconv.Itoa(goiro_level)
 	res := ExecCommand(cmd, goiro_level_str)
-	if len(res) < (9+size+1){
-		return "", "", "tt" 
-	}
-	score := res[6]
-	best_i, _ := strconv.Atoi(UnTransCoordinate(res[4], size, true))
+	// if len(res) < (9+size+1){
+	// 	return "", "", "tt" 
+	// }
+	score := res[1]
+	best_i, _ := strconv.Atoi(UnTransCoordinate(res[0], size, true))
 	best := TransCoordinate(best_i, size, false)
 	uploadKifu(s_color[color*(-1)], best, hash)
-	influence := parseBoard2(res[8:9+size])
+	influence := parseBoard_line(res[2])
 	return score, influence, best
 }
 
@@ -98,7 +102,7 @@ func FirstPlay(hash string, color int, size int, level int, goiro_level int) str
 	cmd := integralCmd(cmds)
 	goiro_level_str := strconv.Itoa(goiro_level)
 	res:= ExecCommand(cmd, goiro_level_str)
-	best_i, _ := strconv.Atoi(UnTransCoordinate(res[4], size, true))
+	best_i, _ := strconv.Atoi(UnTransCoordinate(res[0], size, true))
 	best := TransCoordinate(best_i, size, false)
 	uploadKifu(s_color[color], best, hash)
 	return best
@@ -112,18 +116,18 @@ func Pass(hash string, color int, size int, level int, goiro_level int) (string,
 									"level "+strconv.Itoa(level),
 									"genmove_"+s_color[color*(-1)],
 									"estimate_score",
-									"initial_influence "+s_color[color]+" influence_regions"}
+									"initial_goiroinfluence "+s_color[color]+" influence_regions"}
 	cmd := integralCmd(cmds)
 	goiro_level_str := strconv.Itoa(goiro_level)
 	res := ExecCommand(cmd, goiro_level_str)
-	if len(res) < (9+size+1){
-		return "", "", "tt" 
-	}
-	score = res[6]
-	best_i, _ := strconv.Atoi(UnTransCoordinate(res[4], size, true))
+	// if len(res) < (9+size+1){
+	// 	return "", "", "tt" 
+	// }
+	score = res[1]
+	best_i, _ := strconv.Atoi(UnTransCoordinate(res[0], size, true))
 	best = TransCoordinate(best_i, size, false)
 	uploadKifu(s_color[color*(-1)], best, hash)
-	influence = parseBoard2(res[8:9+size])
+	influence = parseBoard_line(res[2])
 	return score, influence, best
 }
 
@@ -175,11 +179,11 @@ func HuntDragon(hash string, color int, i int, size int) string{
 
 	point := TransCoordinate(i, size, true)
 	cmds := []string{"loadsgf ./assets/kifu/"+hash+".sgf",
-										"findlib "+point}
+					 "findlib "+point}
 	cmd := integralCmd(cmds)
 	res := ExecCommand(cmd)
-	if res[2] != "? vertex must not be empty" {
-		slice := strings.Split(res[2], " ")
+	if res[0] != "vertex must not be empty" {
+		slice := strings.Split(res[0], " ")
 		for _, v := range slice{
 			v = UnTransCoordinate(v, size, true)
 			tmp = append(tmp, v)
@@ -193,10 +197,10 @@ func HuntDragon(hash string, color int, i int, size int) string{
 
 func ShowBoard(hash string) string{
 	cmds := []string{"loadsgf ./assets/kifu/"+hash+".sgf",
-									"showboard"}
+									"showgoiroboard"}
 	cmd := integralCmd(cmds)
 	res := ExecCommand(cmd)
-	parsed_board := parseBoard(res)
+	parsed_board := parseBoard_line(res[0])
 	parsed_board = strings.Replace(parsed_board, "O", "4", -1)
 	parsed_board = strings.Replace(parsed_board, "X", "-4", -1)
 	//parsed_board = strings.Replace(parsed_board, ".", "0", -1)
@@ -210,8 +214,8 @@ func CapturedStone(hash string) (string, string){
 										"captures white"}
 	cmd := integralCmd(cmds)
 	res := ExecCommand(cmd)
-	black := res[2]
-	white := res[4]
+	black := res[0]
+	white := res[1]
 	return black, white
 }
 
@@ -224,10 +228,11 @@ func ShowInfluence(hash string, color int, size int) string{
 		s_color = "white"
 	}
 	cmds := []string{"loadsgf ./assets/kifu/"+hash+".sgf",
-									"initial_influence "+s_color+" influence_regions"}
+									"initial_goiroinfluence "+s_color+" influence_regions"}
 	cmd := integralCmd(cmds)
 	res := ExecCommand(cmd)
-	parsed_board := parseBoard2(res[2:3+size])
+	//parsed_board := parseBoard2(res[2:3+size])
+	parsed_board := parseBoard_line(res[0])
 	return parsed_board
 }
 
@@ -236,7 +241,7 @@ func EstimateScore(hash string) string{
 									"estimate_score"}
 	cmd := integralCmd(cmds)
 	res := ExecCommand(cmd)
-	return res[2]
+	return res[0]
 }
 
 func FinalScore(hash string) string{
@@ -244,7 +249,7 @@ func FinalScore(hash string) string{
 									"final_score"}
 	cmd := integralCmd(cmds)
 	res := ExecCommand(cmd)
-	return res[2]
+	return res[0]
 }
 
 func parseBoard(boards []string) string{
@@ -280,6 +285,14 @@ func parseBoard2(boards []string) string{
 	}
 	final_res := strings.Join(res, ",")
 	return final_res
+}
+
+func parseBoard_line(boards string) string{
+	var res string
+	boards = strings.TrimSpace(boards)
+	res = strings.Replace(boards, "  ", " ", -1)
+	res = strings.Replace(res, " ", ",", -1)
+	return res
 }
 
 func TransCoordinate(c, size int, gnugo bool) string{

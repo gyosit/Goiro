@@ -430,6 +430,7 @@ int string_to_location(int boardsize, const char *str);
 int is_hoshi_point(int m, int n);
 void draw_letter_coordinates(FILE *outfile);
 void simple_showboard(FILE *outfile);
+void goiro_showboard(FILE *outfile);
 
 void mark_goal_in_sgf(signed char goal[BOARDMAX]);
 

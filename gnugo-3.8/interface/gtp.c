@@ -258,15 +258,15 @@ gtp_printf(const char *format, ...)
 void
 gtp_start_response(int status)
 {
-  if (status == GTP_SUCCESS)
-    gtp_printf("=");
-  else
-    gtp_printf("?");
+  // if (status == GTP_SUCCESS)
+  //   gtp_printf("=");
+  // else
+  //   gtp_printf("?");
   
-  if (current_id < 0)
-    gtp_printf(" ");
-  else
-    gtp_printf("%d ", current_id);
+  // if (current_id < 0)
+  //   gtp_printf(" ");
+  // else
+  //   gtp_printf("%d ", current_id);
 }
 
 

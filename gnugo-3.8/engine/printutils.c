@@ -510,6 +510,24 @@ simple_showboard(FILE *outfile)
   draw_letter_coordinates(outfile);
 }
 
+void
+goiro_showboard(FILE *outfile)
+{
+  int i, j;
+  
+  for (i = 0; i < board_size; i++) {
+    
+    for (j = 0; j < board_size; j++) {
+      if (BOARD(i, j) == EMPTY)
+	fprintf(outfile, " %c", '.');
+      else
+	fprintf(outfile, " %c", BOARD(i, j) == BLACK ? 'X' : 'O');
+    }
+  }
+  
+  fprintf(outfile, "\n");
+}
+
 
 /* Adds square marks for each goal intersecion in the current sgf_dumptree.
  * This function cannot be in sgf/ as it has to understand the 1-D board.

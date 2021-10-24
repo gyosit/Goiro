@@ -1,22 +1,22 @@
  /***      ***
   *** Main *** 
   ***      ***/
-scene = "home";
+var scene = "home";
 /* 
 home: ホーム画面
 play: プレイ画面
 review: 検討画面
 */
-SIDE = 500;
-margin = 100;
-window_w = document.documentElement.clientWidth;
-window_h = document.documentElement.clientHeight;
+var SIDE = 500;
+var margin = 100;
+var window_w = document.documentElement.clientWidth;
+var window_h = document.documentElement.clientHeight;
 if (window_w > window_h){
-  GAME_WIDTH = SIDE+margin*2+220;
-  GAME_HEIGHT = SIDE+margin;
+  var GAME_WIDTH = SIDE+margin*2+220;
+  var GAME_HEIGHT = SIDE+margin;
 }else{
-  GAME_WIDTH = SIDE+margin;
-  GAME_HEIGHT = SIDE+margin*2+240;
+  var GAME_WIDTH = SIDE+margin;
+  var GAME_HEIGHT = SIDE+margin*2+240;
 }
 
 var rendererOptions = {
@@ -30,7 +30,7 @@ var rendererOptions = {
   
 // Create the canvas in which the game will show, and a
 // generic container for all the graphical objects
-renderer = PIXI.autoDetectRenderer(GAME_WIDTH, GAME_HEIGHT, rendererOptions);
+var renderer = PIXI.autoDetectRenderer(GAME_WIDTH, GAME_HEIGHT, rendererOptions, {preserveDrawingBuffer: true});
   
 // Put the renderer on screen in the corner
 renderer.view.style.position = "absolute";
@@ -43,7 +43,7 @@ window_h = document.documentElement.clientHeight;
 //let app = new PIXI.Application({width: window_w-10, height: window_h-10})
 //document.body.appendChild(app.view);
 document.body.appendChild(renderer.view);
-stage = new PIXI.Container();
+var stage = new PIXI.Container();
 
 var black = "";
 var white = "";
@@ -51,9 +51,10 @@ var c_b = "0";
 var c_w = "0";
 
 var senrigan = false;
+var link_visible = true;
 let times = 0;
-review_times = 0;
-review_index = 0;
+var review_times = 0;
+var review_index = 0;
 
 var pass_f = function() {
   console.log(mode);
@@ -67,11 +68,16 @@ var resign_f = function() {
   socket.send("resign");
 }
 
+var change_f = function() {
+  link_visible = !link_visible;
+  visibleLink(link_visible);
+}
+
 var senrigan_f = function() {
   socket.send("senrigan");
   senrigan = !senrigan;
-  deleteImage(texture, "board");
-  initGoban(stage, board_size, texture, senrigan);
+  deleteImage("board");
+  initGoban(board_size);
 }
 
 var back_f = function() {
@@ -97,12 +103,12 @@ var vshuman_f = function(){
 }
 var vscom_f = function(){
   // AI対戦設定画面
-  deleteImage(texture, "button");
-  deleteImage(texture, "text");
+  deleteImage("button");
+  deleteImage("text");
   
-  putText(0, 50, stage, "強さ", font_style, "text");
-  putText(350, 50, stage, "普通", font_style, "level");
-  makeButton(300, 50, stage, "back", function(){
+  putText(0, 50, "強さ", font_style, "text");
+  putText(350, 50, "普通", font_style, "level");
+  makeButton(300, 50, "back", function(){
     let t = getText("level");
     switch(t){
       case "普通":
@@ -113,7 +119,7 @@ var vscom_f = function(){
         break;
     }
   });
-  makeButton(550, 50, stage, "forward", function(){
+  makeButton(550, 50, "forward", function(){
     let t = getText("level");
     switch(t){
       case "普通":
@@ -124,9 +130,9 @@ var vscom_f = function(){
         break;
     }
   });
-  putText(0, 100, stage, "盤のサイズ", font_style, "text");
-  putText(350, 100, stage, "9", font_style, "b_size");
-  makeButton(300, 100, stage, "back", function(){
+  putText(0, 100, "盤のサイズ", font_style, "text");
+  putText(350, 100, "9", font_style, "b_size");
+  makeButton(300, 100, "back", function(){
     let t = getText("b_size");
     switch(t){
       case "19":
@@ -140,7 +146,7 @@ var vscom_f = function(){
         break;
     }
   });
-  makeButton(550, 100, stage, "forward", function(){
+  makeButton(550, 100, "forward", function(){
     let t = getText("b_size");
     switch(t){
       case "19":
@@ -154,9 +160,9 @@ var vscom_f = function(){
         break;
     }
   });
-  putText(0, 150, stage, "コミ(白が得る地)", font_style, "text");
-  putText(350, 150, stage, "6.5", font_style, "komi");
-  makeButton(300, 150, stage, "back", function(){
+  putText(0, 150, "コミ(白が得る地)", font_style, "text");
+  putText(350, 150, "6.5", font_style, "komi");
+  makeButton(300, 150, "back", function(){
     let t = parseFloat(getText("komi"));
     switch(t){
       case 0.5:
@@ -170,7 +176,7 @@ var vscom_f = function(){
         break;
     }
   });
-  makeButton(550, 150, stage, "forward", function(){
+  makeButton(550, 150, "forward", function(){
     let t = parseFloat(getText("komi"));
     switch(t){
       case -0.5:
@@ -184,9 +190,9 @@ var vscom_f = function(){
         break;
     }
   });
-  putText(0, 200, stage, "手番", font_style, "text");
-  putText(350, 200, stage, "にぎり(ランダム)", font_style, "turn_set");
-  makeButton(300, 200, stage, "back", function(){
+  putText(0, 200, "手番", font_style, "text");
+  putText(350, 200, "にぎり(ランダム)", font_style, "turn_set");
+  makeButton(300, 200, "back", function(){
     let t = getText("turn_set");
     switch(t){
       case "黒番":
@@ -200,7 +206,7 @@ var vscom_f = function(){
         break;
     }
   });
-  makeButton(550, 200, stage, "forward", function(){
+  makeButton(550, 200, "forward", function(){
     let t = getText("turn_set");
     switch(t){
       case "黒番":
@@ -214,18 +220,18 @@ var vscom_f = function(){
         break;
     }
   });
-  putText(0, 250, stage, "ハンデ(黒が置く石の数)", font_style, "text");
-  putText(350, 250, stage, "0", font_style, "hande");
-  makeButton(300, 250, stage, "back", function(){
+  putText(0, 250, "ハンデ(黒が置く石の数)", font_style, "text");
+  putText(350, 250, "0", font_style, "hande");
+  makeButton(300, 250, "back", function(){
     let t = parseFloat(getText("hande"));
     if(t > 0) editText("hande", t-1);
   });
-  makeButton(550, 250, stage, "forward", function(){
+  makeButton(550, 250, "forward", function(){
     let t = parseFloat(getText("hande"));
     if(t < 9) editText("hande", t+1);
   });
-  makeButton(100, 350, stage, "backarrow", resize);
-  makeButton(300, 350, stage, "vscom_start", function(){
+  makeButton(100, 350, "backarrow", resize);
+  makeButton(300, 350, "vscom_start", function(){
     scene = "play";
     let level = getText("level");
     board_size = getText("b_size");
@@ -247,11 +253,11 @@ var vscom_f = function(){
 }
 var vsfree_f = function(){
   // 自由碁盤設定画面
-  deleteImage(texture, "button");
-  deleteImage(texture, "text");
-  putText(0, 100, stage, "盤のサイズ", font_style, "text");
-  putText(350, 100, stage, "9", font_style, "b_size");
-  makeButton(300, 100, stage, "back", function(){
+  deleteImage("button");
+  deleteImage("text");
+  putText(0, 100, "盤のサイズ", font_style, "text");
+  putText(350, 100, "9", font_style, "b_size");
+  makeButton(300, 100, "back", function(){
     let t = getText("b_size");
     switch(t){
       case "19":
@@ -265,7 +271,7 @@ var vsfree_f = function(){
         break;
     }
   });
-  makeButton(550, 100, stage, "forward", function(){
+  makeButton(550, 100, "forward", function(){
     let t = getText("b_size");
     switch(t){
       case "19":
@@ -279,9 +285,9 @@ var vsfree_f = function(){
         break;
     }
   });
-  putText(0, 150, stage, "コミ(白が得る地)", font_style, "text");
-  putText(350, 150, stage, "6.5", font_style, "komi");
-  makeButton(300, 150, stage, "back", function(){
+  putText(0, 150, "コミ(白が得る地)", font_style, "text");
+  putText(350, 150, "6.5", font_style, "komi");
+  makeButton(300, 150, "back", function(){
     let t = parseFloat(getText("komi"));
     switch(t){
       case 0.5:
@@ -295,7 +301,7 @@ var vsfree_f = function(){
         break;
     }
   });
-  makeButton(550, 150, stage, "forward", function(){
+  makeButton(550, 150, "forward", function(){
     let t = parseFloat(getText("komi"));
     switch(t){
       case -0.5:
@@ -309,18 +315,18 @@ var vsfree_f = function(){
         break;
     }
   });
-  putText(0, 200, stage, "ハンデ(黒が置く石の数)", font_style, "text");
-  putText(350, 200, stage, "0", font_style, "hande");
-  makeButton(300, 200, stage, "back", function(){
+  putText(0, 200, "ハンデ(黒が置く石の数)", font_style, "text");
+  putText(350, 200, "0", font_style, "hande");
+  makeButton(300, 200, "back", function(){
     let t = parseFloat(getText("hande"));
     if(t > 0) editText("hande", t-1);
   });
-  makeButton(550, 200, stage, "forward", function(){
+  makeButton(550, 200, "forward", function(){
     let t = parseFloat(getText("hande"));
     if(t < 9) editText("hande", t+1);
   });
-  makeButton(100, 300, stage, "backarrow", resize);
-  makeButton(300, 300, stage, "vsfree_start", function(){
+  makeButton(100, 300, "backarrow", resize);
+  makeButton(300, 300, "vsfree_start", function(){
     scene = "play";
     board_size = getText("b_size");
     let komi = getText("komi");
@@ -339,7 +345,7 @@ var vsfree_f = function(){
   });
 }
 
-let texture = {"board": [], 
+var texture = {"board": [], 
               "stone": [],
               "territory": [],
               "bless": [],
@@ -366,8 +372,8 @@ let texture = {"board": [],
               "turn": [],
               "text": [],
               "button_home": []};
-let links = [];
-let info_y = {"button": 5,
+var links = [];
+var info_y = {"button": 5,
               "button2": 7,
               "button3": 8,
               "player": 1,
@@ -375,9 +381,10 @@ let info_y = {"button": 5,
               "txt_home": 1, 
               "score": 3,
               "turn": 4};
-let b_events = {"pass": pass_f,
+var b_events = {"pass": pass_f,
                 "resign": resign_f,
                 "senrigan": senrigan_f,
+                "change": change_f,
                 "head": head_f,
                 "back": back_f,
                 "forward": forward_f,
@@ -387,11 +394,12 @@ let b_events = {"pass": pass_f,
                 "vshuman": vshuman_f,
                 "vscom": vscom_f,
                 "vsfree": vsfree_f, };
-font_style = {font:'60pt Arial', fill:'black'};
+var font_style = {font:'60pt Arial', fill:'black'};
 
-var url = "wss://" + window.location.host + ":1780" + "/connect/" + username+ "/ws";
-//var url = "ws://" + window.location.host + "/connect/" + username+ "/ws";
+//var url = "wss://" + window.location.host + ":1780" + "/connect/" + username+ "/ws";
+var url = "ws://" + window.location.host + "/connect/" + username+ "/ws";
 var socket = new WebSocket(url);
+var xhr = new XMLHttpRequest();
 
 // Disconnect event
 socket.addEventListener("close", function(event){
@@ -414,22 +422,22 @@ socket.onmessage = function(msg){
     if(scene != "play") return;
     obj = msg['data'].split(":")[1].split(",");
     let size = Math.sqrt(obj.length);
-    deleteImage(texture, "stone");
-    deleteImage(texture, "territory");
-    deleteImage(texture, "link1");
-    deleteImage(texture, "link2");
-    deleteImage(texture, "link3");
-    deleteImage(texture, "link4");
-    deleteImage(texture, "link5");
-    deleteImage(texture, "link6");
-    deleteImage(texture, "link7");
-    deleteImage(texture, "link8");
-    deleteImage(texture, "link9");
-    deleteImage(texture, "link10");
-    deleteImage(texture, "link11");
-    deleteImage(texture, "link12");
-    deleteImage(texture, "link13");
-    deleteImage(texture, "link14");
+    deleteImage("stone");
+    deleteImage("territory");
+    deleteImage("link1");
+    deleteImage("link2");
+    deleteImage("link3");
+    deleteImage("link4");
+    deleteImage("link5");
+    deleteImage("link6");
+    deleteImage("link7");
+    deleteImage("link8");
+    deleteImage("link9");
+    deleteImage("link10");
+    deleteImage("link11");
+    deleteImage("link12");
+    deleteImage("link13");
+    deleteImage("link14");
     obj.forEach(v => {
       y = Math.floor(i / size);
       x = i % size - 1;
@@ -441,22 +449,22 @@ socket.onmessage = function(msg){
       var white_t = 0x87ceeb;
       switch(v){
         case "-3":
-          makeImage(x, y, stage, black_t, "territory", 0.2, SIDE, board_size);
+          makeImage(x, y, black_t, "territory", 0.2, SIDE, board_size);
           break;
         case "-2":
-          makeImage(x, y, stage, black_t, "territory", 0.1, SIDE, board_size);
+          makeImage(x, y, black_t, "territory", 0.1, SIDE, board_size);
           break;
         case "-1":
-          makeImage(x, y, stage, black_t, "territory", 0.05, SIDE, board_size);
+          makeImage(x, y, black_t, "territory", 0.05, SIDE, board_size);
           break;
         case "3":
-          makeImage(x, y, stage, white_t, "territory", 0.2, SIDE, board_size);
+          makeImage(x, y, white_t, "territory", 0.2, SIDE, board_size);
           break;
         case "2":
-          makeImage(x, y, stage, white_t, "territory", 0.1, SIDE, board_size);
+          makeImage(x, y, white_t, "territory", 0.1, SIDE, board_size);
           break;
         case "1":
-          makeImage(x, y, stage, white_t, "territory", 0.05, SIDE, board_size);
+          makeImage(x, y, white_t, "territory", 0.05, SIDE, board_size);
           break;
         default:
           break;
@@ -475,10 +483,10 @@ socket.onmessage = function(msg){
       var white_s = 0xffffff;
       switch(v){
         case "-4":
-          makeImage(x, y, stage, black_s, "stone", 1, SIDE, board_size);
+          makeImage(x, y, black_s, "stone", 1, SIDE, board_size);
           break;
         case "4":
-          makeImage(x, y, stage, white_s, "stone", 1, SIDE, board_size);
+          makeImage(x, y, white_s, "stone", 1, SIDE, board_size);
           break;
         default:
           break;
@@ -545,125 +553,150 @@ socket.onmessage = function(msg){
 
         if(vertical_line){
           //縦方向の直列
-          makeImage(x, y, stage, link_color, "link1", 1, SIDE, board_size);
+          makeImage(x, y, link_color, "link1", 1, SIDE, board_size);
         }
         if(horizontal_line){
           //横方向の直列
-          makeImage(x, y, stage, link_color, "link2", 1, SIDE, board_size);
+          makeImage(x, y, link_color, "link2", 1, SIDE, board_size);
         }
         if(bottom_right && !(horizontal_line || vertical_line)){
           //右下コスミ・ハネ
-          makeImage(x, y, stage, link_color, "link3", 1, SIDE, board_size);
+          makeImage(x, y, link_color, "link3", 1, SIDE, board_size);
         }
         if(bottom_left && !(left_line || vertical_line)){
           //左下コスミ・ハネ
-          makeImage(x, y, stage, link_color, "link4", 1, SIDE, board_size);
+          makeImage(x, y, link_color, "link4", 1, SIDE, board_size);
         }
         if(vertical_one && !(bottom_right || bottom_left)){
           //縦一間トビ
-          makeImage(x, y, stage, link_color, "link5", 1, SIDE, board_size);
+          makeImage(x, y, link_color, "link5", 1, SIDE, board_size);
         }
         if(horizontal_one && !(bottom_right || up_right)){
           //横一間トビ
-          makeImage(x, y, stage, link_color, "link6", 1, SIDE, board_size);
+          makeImage(x, y, link_color, "link6", 1, SIDE, board_size);
         }
         if(vertical_two){
           //縦二間トビ
-          makeImage(x, y, stage, link_color, "link7", 1, SIDE, board_size);
+          makeImage(x, y, link_color, "link7", 1, SIDE, board_size);
         }
         if(horizontal_two){
           //横ニ間トビ
-          makeImage(x, y, stage, link_color, "link8", 1, SIDE, board_size);
+          makeImage(x, y, link_color, "link8", 1, SIDE, board_size);
         }
         if(vertical_three){
           //縦三間トビ
-          makeImage(x, y, stage, link_color, "link9", 1, SIDE, board_size);
+          makeImage(x, y, link_color, "link9", 1, SIDE, board_size);
         }
         if(horizontal_three){
           //横三間トビ
-          makeImage(x, y, stage, link_color, "link10", 1, SIDE, board_size);
+          makeImage(x, y, link_color, "link10", 1, SIDE, board_size);
         }
         if(keima_four && !vertical_line && !horizontal_line && !bottom_right){
           //ケイマ (4時)
-          makeImage(x, y, stage, link_color, "link11", 1, SIDE, board_size);
+          makeImage(x, y, link_color, "link11", 1, SIDE, board_size);
         }
         if(keima_five && !vertical_line && !horizontal_line && !bottom_right && !vertical_one){
           //ケイマ (5時)
-          makeImage(x, y, stage, link_color, "link12", 1, SIDE, board_size);
+          makeImage(x, y, link_color, "link12", 1, SIDE, board_size);
         }
         if(keima_seven && !vertical_line && !left_line && !bottom_left && !vertical_one){
           //ケイマ (7時)
-          makeImage(x, y, stage, link_color, "link13", 1, SIDE, board_size);
+          makeImage(x, y, link_color, "link13", 1, SIDE, board_size);
         }
         if(keima_eight && !vertical_line && !left_line && !bottom_left){
           //ケイマ (8時)
-          makeImage(x, y, stage, link_color, "link14", 1, SIDE, board_size);
+          makeImage(x, y, link_color, "link14", 1, SIDE, board_size);
         }
       }
       i++;
     })
     deletelinks();
-    deleteImage(texture, "message");
+    deleteImage("message");
+    console.log()
+    visibleLink(link_visible);
     break;
   }case "pass":{
     if(scene != "play") return;
-    deleteImage(texture, "message");
-    makeText(SIDE+margin, stage, "PASS", font_style, "message");
+    deleteImage("message");
+    makeText(SIDE+margin, "PASS", font_style, "message");
     break;
   }case "busy":{
     if(scene != "play") return;
-    deleteImage(texture, "message");
-    makeText(SIDE+margin, stage, "処理中...", font_style, "message");
+    deleteImage("message");
+    makeText(SIDE+margin, "処理中...", font_style, "message");
     break;
   }case "bless":{
     if(scene != "play") return;
     obj = msg['data'].split(":")[1].split(",");
     let size = Math.sqrt(obj.length);
-    deleteImage(texture, "bless");
+    deleteImage("bless");
     obj.forEach(v => {
       y = Math.floor(v / 100);
       x = v - y*100;
-      makeImage(x, y, stage, 0xff0000, "bless", 1, SIDE, board_size);
+      makeImage(x, y, 0xff0000, "bless", 1, SIDE, board_size);
     })
     break;
   }case "score":{
     if(scene != "play") return;
     obj = msg['data'].split(":")[1].split(" ")[0].split("+");
     let size = Math.sqrt(obj.length);
-    deleteImage(texture, "score");
-    makeText(SIDE+margin, stage, msg['data'].split(":")[1].split(" ")[0], font_style, "score");
+    deleteImage("score");
+    makeText(SIDE+margin, msg['data'].split(":")[1].split(" ")[0], font_style, "score");
     obj[1] = parseFloat(obj[1]);
     if(obj[0]=="W"){
       obj[1] *= -1;
     }
-    makeScorebar(stage, obj[1]);
+    makeScorebar(obj[1]);
     break;
   }case "finalscore":{
+    senrigan = false;
     if(scene != "play") return;
     obj = msg['data'].split(":")[1].split(" ")[0].split("+");
     let size = Math.sqrt(obj.length);
-    deleteImage(texture, "score");
-    makeText(SIDE+margin, stage, "Good Game!" + msg['data'].split(":")[1].split(" ")[0], font_style, "score");
+    deleteImage("score");
+    makeText(SIDE+margin, "Good Game!" + msg['data'].split(":")[1].split(" ")[0], font_style, "score");
     scene = "home";
-    makeButton(0, 0, stage, "backarrow", function(){
+    makeButton(0, 0, "backarrow", function(){
       scene = "home";
       resize();
+    });
+    makeButton(50, 0, "tweet", function(){
+      console.log("tweet");
+      renderer.render(stage);
+      let c = renderer.view.toDataURL("image/png", 1);
+      let now_date = new Date();
+      let jsondata = {'name': username,
+                      'date': now_date.toLocaleString(),
+                      'img': c
+                    };
+      let json_text = JSON.stringify(jsondata);
+      xhr = new XMLHttpRequest;       //インスタンス作成
+      xhr.onload = function(){        //レスポンスを受け取った時の処理（非同期）
+          var res = xhr.responseText.split("\"")[3];
+          window.open("https://twitter.com/share?hashtags=碁色&url=\n"+"https://goiro.net/html/"+res);
+      };
+      xhr.onerror = function(){       //エラーが起きた時の処理（非同期）
+          alert("error!");
+      }
+      xhr.open('POST', 'save_image', true);
+      xhr.setRequestHeader('content-type', 'application/x-www-form-urlencoded;charset=UTF-8');
+      xhr.send(json_text);
     });
     if(obj[1]=="R") obj[1] = 30;
     obj[1] = parseFloat(obj[1]);
     if(obj[0]=="W"){
       obj[1] *= -1;
     }
-    makeScorebar(stage, obj[1]);
-    deleteImage(texture, "message");
+    makeScorebar(obj[1]);
+    deleteImage("message");
     break;
   }case "captured":{
     if(scene != "play") return;
     obj = msg['data'].split(":")[1].split(",");
     c_b = obj[0];
     c_w = obj[1];
-    deleteImage(texture, "player");
-    makeText(SIDE+margin, stage, "●"+black+"("+c_b+")"+"　○"+white+"("+c_w+")", font_style, "player");
+    deleteImage("player");
+    makeText(SIDE+margin, "●"+black+"("+c_b+")"+"　○"+white+"("+c_w+")", font_style, "player");
     break;
   }case "turn":{
     if(scene != "play") return;
@@ -676,20 +709,20 @@ socket.onmessage = function(msg){
     }else{
       now_turn = "黒番"
     }
-    deleteImage(texture, "turn");
-    makeText(SIDE+margin, stage, "現在"+now_turn+"です。", font_style, "turn");
+    deleteImage("turn");
+    makeText(SIDE+margin, "現在"+now_turn+"です。", font_style, "turn");
     y = Math.floor(last_pos / 100);
     x = last_pos - y*100;
-    deleteImage(texture, "last");
-    makeImage(x, y, stage, 0xff0000, "last", 1, SIDE, board_size);
+    deleteImage("last");
+    makeImage(x, y, 0xff0000, "last", 1, SIDE, board_size);
     break;
   }case "player":{
     if(scene != "play") return;
     obj = msg['data'].split(":")[1];
     let black = obj.split(",")[0];
     let white = obj.split(",")[1];
-    deleteImage(texture, "player");
-    makeText(SIDE+margin, stage, "●"+black+"("+c_b+")"+"　○"+white+"("+c_w+")", font_style, "player");
+    deleteImage("player");
+    makeText(SIDE+margin, "●"+black+"("+c_b+")"+"　○"+white+"("+c_w+")", font_style, "player");
     break;
   }case "review":{
     objs = msg['data'].split("w:")[1];
@@ -736,12 +769,12 @@ socket.onmessage = function(msg){
           });
           stage.addChild(objSprite);
           texture["button"].push(objSprite);
-          putText(110, review_times_*150+50, stage, `${size}路盤/コミ${komi}目/ハンデ${hande}子\n●${black}/○${white}\n${winner}`);
+          putText(110, review_times_*150+50, `${size}路盤/コミ${komi}目/ハンデ${hande}子\n●${black}/○${white}\n${winner}`);
           renderer.render(stage);
           console.log("complete!");
         });
     }
-      //putText(100, review_times*200, stage, "${size}路盤/コミ${komi}目/ハンデ${hande}子\n●${black}/○${white}");
+      //putText(100, review_times*200, "${size}路盤/コミ${komi}目/ハンデ${hande}子\n●${black}/○${white}");
       console.log(stage);
       break;
     }case "review_ind":{
@@ -790,7 +823,7 @@ function addTexture(key, obj, front=false){
   renderer.render(stage);
 }
  
-function initGoban(stage, size, texture, sengigan){
+function initGoban(size){
   var stars = [];
   if (size == 9){
       stars = [2, 6];
@@ -801,7 +834,7 @@ function initGoban(stage, size, texture, sengigan){
   }
   let board_color;
   let line_color;
-  if (sengigan){
+  if (senrigan){
     board_color = 0x2e2930;
     line_color = 0x8d6449;
   }else{
@@ -865,20 +898,21 @@ function initGoban(stage, size, texture, sengigan){
   stage.addChildAt(back, 0);
   texture["board"].push(back);
 
-  //makeButton(SIDE+margin+10, stage, "BUTTON", 0xff0000, "blue", "yellow");
+  //makeButton(SIDE+margin+10, "BUTTON", 0xff0000, "blue", "yellow");
   if(mode != "free"){
-    loadImage(SIDE+margin+10, info_y["button"]*30, stage, "pass");
-    loadImage(SIDE+margin+100, info_y["button"]*30, stage, "resign");
-    loadImage(SIDE+margin+190, info_y["button"]*30, stage, "senrigan");
+    loadImage(SIDE+margin+10, info_y["button"]*30, "pass");
+    loadImage(SIDE+margin+90, info_y["button"]*30, "resign");
+    loadImage(SIDE+margin+170, info_y["button"]*30, "senrigan");
+    loadImage(SIDE+margin+260, info_y["button"]*30, "change");
   }else{
-    loadImage(SIDE+margin+10, info_y["button"]*30, stage, "pass");
-    loadImage(SIDE+margin+10, info_y["button2"]*30, stage, "head");
-    loadImage(SIDE+margin+100, info_y["button2"]*30, stage, "back");
-    loadImage(SIDE+margin+160, info_y["button2"]*30, stage, "forward");
-    loadImage(SIDE+margin+220, info_y["button2"]*30, stage, "end");
-    loadImage(SIDE+margin+10, info_y["button3"]*30, stage, "resume");
-    loadImage(SIDE+margin+100, info_y["button3"]*30, stage, "override");
-    makeButton(0, 0, stage, "backarrow", function(){
+    loadImage(SIDE+margin+10, info_y["button"]*30, "pass");
+    loadImage(SIDE+margin+10, info_y["button2"]*30, "head");
+    loadImage(SIDE+margin+100, info_y["button2"]*30, "back");
+    loadImage(SIDE+margin+160, info_y["button2"]*30, "forward");
+    loadImage(SIDE+margin+220, info_y["button2"]*30, "end");
+    loadImage(SIDE+margin+10, info_y["button3"]*30, "resume");
+    loadImage(SIDE+margin+100, info_y["button3"]*30, "override");
+    makeButton(0, 0, "backarrow", function(){
       scene = "home";
       socket.send("leave");
       resize();
@@ -887,7 +921,7 @@ function initGoban(stage, size, texture, sengigan){
   renderer.render(stage);
 }
 
-function inithome(stage, texture){
+function inithome(){
   let background = new PIXI.Texture.from("/assets/images/background.png");
   let backSprit = new PIXI.Sprite(background);
   backSprit.x = 0;
@@ -896,42 +930,42 @@ function inithome(stage, texture){
   backSprit.height = 610;
   stage.addChildAt(backSprit, 0);
   addTexture("image", backSprit);
-  putText(0, 0, stage, "ようこそ "+ username + "さん!", font_style, "text");
-  makeButton(0, 30, stage, "review", function(){
+  putText(0, 0, "ようこそ "+ username + "さん!", font_style, "text");
+  makeButton(0, 30, "review", function(){
     scene = "review";
     review_times = 0;
     review_index = 0;
     resize();
   });
-  makeButton(60, 30, stage, "history", function(){
+  makeButton(60, 30, "history", function(){
     window.location.href = 'history';
   });
-  makeButton(150, 30, stage, "thanks", function(){
+  makeButton(150, 30, "thanks", function(){
     window.location.href = 'thanks';
   });
-  makeButton(280, 30, stage, "twitter", function(){
+  makeButton(280, 30, "twitter", function(){
     window.open('https://twitter.com/Mr_isoy', '_blank');
   });
-  makeButton(390, 30, stage, "message", function(){
+  makeButton(390, 30, "message", function(){
     window.location.href = 'message';
   });
-  makeButton(495, 30, stage, "logout", function(){
+  makeButton(495, 30, "logout", function(){
     username = "";
     window.location.href = 'logout';
   });
-  putText(0, 500, stage, 
+  putText(0, 500, 
 `本サイトはまだ試作段階です。
 サーバーダウンやセキュリティ問題等に責任を負えません。
 不具合・要望は作者に連絡いただけると幸いです。`, font_style, "text")
-  makeButton(0, 140, stage, "vshuman", vshuman_f);
-  makeButton(0, 220, stage, "vscom", vscom_f);
-  makeButton(0, 300, stage, "vsfree", vsfree_f);
+  makeButton(0, 140, "vshuman", vshuman_f);
+  makeButton(0, 220, "vscom", vscom_f);
+  makeButton(0, 300, "vsfree", vsfree_f);
   
   console.log(stage);
   renderer.render(stage);
 }
 
-function initLogin(stage, texture){
+function initLogin(){
   let background = new PIXI.Texture.from("/assets/images/background.png");
   let backSprit = new PIXI.Sprite(background);
   backSprit.x = 0;
@@ -940,14 +974,14 @@ function initLogin(stage, texture){
   backSprit.height = 610;
   stage.addChildAt(backSprit, 0);
   addTexture("image", backSprit);
-  putText(0, 0, stage, "碁色へようこそ!\nここは新感覚囲碁サイトです。\nまずはユーザー登録かログインをお願いします！", font_style, "text");
-  makeButton(0, 140, stage, "regist", function(){
+  putText(0, 0, "碁色へようこそ!\nここは新感覚囲碁サイトです。\nまずはユーザー登録かログインをお願いします！", font_style, "text");
+  makeButton(0, 140, "regist", function(){
     window.location.href = 'regist';
   });
-  makeButton(0, 220, stage, "login", function(){
+  makeButton(0, 220, "login", function(){
     window.location.href = 'login';
   });
-  putText(0, 500, stage, 
+  putText(0, 500, 
     `本サイトはまだ試作段階です。
 サーバーダウンやセキュリティ問題等に責任を負えません。
 不具合・要望は作者に連絡いただけると幸いです。`, font_style, "text")
@@ -961,17 +995,17 @@ function initReview(){
   backSprit.width = 920;
   backSprit.height = 610;
   addTexture("image", backSprit);
-  makeButton(0, 0, stage, "backarrow", function(){
+  makeButton(0, 0, "backarrow", function(){
     scene = "home";
     resize();
   });
-  makeButton(10, 100, stage, "uparrow", function(){
+  makeButton(10, 100, "uparrow", function(){
     review_times = 0;
     review_index = Math.max(review_index-4, 0);
     console.log(review_index);
     resize();
   });
-  makeButton(10, 400, stage, "downarrow", function(){
+  makeButton(10, 400, "downarrow", function(){
     review_times = 0;
     review_index += 4;
     console.log(review_index);
@@ -979,26 +1013,8 @@ function initReview(){
   });
   socket.send(`review ${review_index}`);
 }
-
-function initInfo(stage, texture){
-  let infoSprite = new PIXI.Graphics()
-    .beginFill("white")
-    .drawRect(SIDE+margin, 0, window_w-SIDE-margin, window_h)
-    .endFill();
-  stage.addChildAt(infoSprite, 0);
-  texture["board"].push(infoSprite);
-}
  
- function initInfo(stage, texture){
-   let infoSprite = new PIXI.Graphics()
-     .beginFill("white")
-     .drawRect(SIDE+margin, 0, window_w-SIDE-margin, window_h)
-     .endFill();
-   stage.addChildAt(infoSprite, 0);
-   texture["board"].push(infoSprite);
- }
- 
-function loadImage(x, y, stage, name){
+function loadImage(x, y, name){
   let X, Y;
   if(window_w > window_h){
     X = x;
@@ -1020,7 +1036,7 @@ function loadImage(x, y, stage, name){
   texture["button"].push(objSprite);
 }
 
-function putImage(x, y, stage, name, type, alpha=1){
+function putImage(x, y, name, type, alpha=1){
   let X, Y;
   X = x;
   Y = y;
@@ -1040,7 +1056,7 @@ function putImage(x, y, stage, name, type, alpha=1){
     });
 }
 
-function makeImage(x, y, stage, color, type, alpha, size, board_size){
+function makeImage(x, y, color, type, alpha, size, board_size){
   x = x * (size/(board_size-1))+margin/2;
   y = y * (size/(board_size-1))+margin/2;
   let x1, x2, y1, y2;
@@ -1069,7 +1085,7 @@ function makeImage(x, y, stage, color, type, alpha, size, board_size){
     // }else{
     //   tmp_color = "inkw";
     // }
-    // putImage(x, y, stage, tmp_color, type, alpha*8)
+    // putImage(x, y, tmp_color, type, alpha*8)
     break;
   case "stone":
     if(color == 0x000000){
@@ -1297,7 +1313,7 @@ function makeImage(x, y, stage, color, type, alpha, size, board_size){
   }
 }
 
-function makeText(x, stage, word, style, type){
+function makeText(x, word, style, type){
   let X, Y;
   if(window_w > window_h){
     X = x;
@@ -1314,7 +1330,7 @@ function makeText(x, stage, word, style, type){
   texture[type].push(textobj);
 }
 
-function putText(x, y, stage, word, style, type){
+function putText(x, y, word, style, type){
   let textobj = new PIXI.Text(word, style); // テキストオブジェクトの生成
   textobj.position.x = x;  // 表示位置(x)
   textobj.position.y = y; // 表示位置(y)
@@ -1329,11 +1345,11 @@ function getText(type){
 function editText(type, word){
   let textobj = texture[type][0];
   textobj.text = word;
-  deleteImage(texture, type);
+  deleteImage(type);
   addTexture(type, textobj);
 }
 
-function makeButton(x, y, stage, name, func){
+function makeButton(x, y, name, func){
   let path = "/assets/images/";
   let loader = new PIXI.Loader();
   loader
@@ -1352,7 +1368,7 @@ function makeButton(x, y, stage, name, func){
     });
 }
 
-function deleteImage(texture, type){
+function deleteImage(type){
   links = [];
   if(type == "all"){
     Object.keys(texture).forEach(v => {
@@ -1368,6 +1384,28 @@ function deleteImage(texture, type){
     texture[type].splice(0);
   }
   renderer.render(stage);
+}
+
+function visibleImage(type, sw){
+  if(type == "all"){
+    Object.keys(texture).forEach(v => {
+      texture[v].forEach(vv => {
+        vv.visible = sw;
+      })
+    })
+  }else{
+    texture[type].forEach(v => {
+      v.visible = sw;
+      console.log(v);
+    })
+  }
+  renderer.render(stage);
+}
+
+function visibleLink(sw){
+  for(let i=1;i<=14;i++){
+    visibleImage("link"+i, sw);
+  }
 }
 
 function overLink(v1, v2){
@@ -1419,7 +1457,7 @@ function putStone(e) {
   socket.send("dragon "+(x+100*y));
  }
  
- function makeScorebar(stage, score) {
+ function makeScorebar(score) {
    let X, Y;
    if(window_w > window_h){
      X = SIDE + margin;
@@ -1449,7 +1487,7 @@ function putStone(e) {
  }
   
 function resize() {
-  deleteImage(texture, "all");
+  deleteImage("all");
   window_w = document.documentElement.clientWidth;
   window_h = document.documentElement.clientHeight;
   if (window_w > window_h){
@@ -1478,12 +1516,12 @@ function resize() {
   switch(scene){
     case "home":
       if(username != "")
-        inithome(stage, texture);
+        inithome();
       else
-        initLogin(stage, texture);
+        initLogin();
       break;
     case "play":
-      initGoban(stage, board_size, texture, senrigan);
+      initGoban(board_size);
       break;
     case "review":
       initReview();
@@ -1521,10 +1559,10 @@ function resize2(){
                   Math.ceil(GAME_HEIGHT * ratio));
   switch(scene){
     case "home":
-      inithome(stage, texture);
+      inithome();
       break;
     case "play":
-      initGoban(stage, board_size, texture, senrigan);
+      initGoban(board_size);
       socket.send("show");
       break;
   }

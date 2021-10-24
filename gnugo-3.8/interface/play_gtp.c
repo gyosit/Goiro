@@ -76,6 +76,7 @@ DECLARE(gtp_does_defend);
 DECLARE(gtp_does_surround);
 DECLARE(gtp_dragon_data);
 DECLARE(gtp_dragon_status);
+DECLARE(gtp_dragon_goirostatus);
 DECLARE(gtp_dragon_stones);
 DECLARE(gtp_draw_search_area);
 DECLARE(gtp_dump_stack);
@@ -108,6 +109,7 @@ DECLARE(gtp_gg_undo);
 DECLARE(gtp_half_eye_data);
 DECLARE(gtp_increase_depths);
 DECLARE(gtp_initial_influence);
+DECLARE(gtp_initial_goiroinfluence);
 DECLARE(gtp_invariant_hash);
 DECLARE(gtp_invariant_hash_for_moves);
 DECLARE(gtp_is_legal);
@@ -164,6 +166,7 @@ DECLARE(gtp_set_random_seed);
 DECLARE(gtp_set_search_diamond);
 DECLARE(gtp_set_search_limit);
 DECLARE(gtp_showboard);
+DECLARE(gtp_showgoiroboard);
 DECLARE(gtp_start_sgftrace);
 DECLARE(gtp_surround_map);
 DECLARE(gtp_tactical_analyze_semeai);
@@ -218,6 +221,7 @@ static struct gtp_command commands[] = {
   {"does_surround",           gtp_does_surround},
   {"dragon_data",             gtp_dragon_data},
   {"dragon_status",    	      gtp_dragon_status},
+  {"dragon_goirostatus",    	gtp_dragon_goirostatus},
   {"dragon_stones",           gtp_dragon_stones},
   {"draw_search_area",        gtp_draw_search_area},
   {"dump_stack",       	      gtp_dump_stack},
@@ -251,6 +255,7 @@ static struct gtp_command commands[] = {
   {"help",                    gtp_list_commands},
   {"increase_depths",  	      gtp_increase_depths},
   {"initial_influence",       gtp_initial_influence},
+  {"initial_goiroinfluence",  gtp_initial_goiroinfluence},
   {"invariant_hash_for_moves",gtp_invariant_hash_for_moves},
   {"invariant_hash",   	      gtp_invariant_hash},
   {"is_legal",         	      gtp_is_legal},
@@ -304,6 +309,7 @@ static struct gtp_command commands[] = {
   {"set_search_diamond",      gtp_set_search_diamond},
   {"set_search_limit",        gtp_set_search_limit},
   {"showboard",        	      gtp_showboard},
+  {"showgoiroboard",          gtp_showgoiroboard},
   {"start_sgftrace",  	      gtp_start_sgftrace},
   {"surround_map",            gtp_surround_map},
   {"tactical_analyze_semeai", gtp_tactical_analyze_semeai},
@@ -861,7 +867,7 @@ gtp_loadsgf(char *s)
   sgfFreeNode(sgftree.root);
 
   gtp_start_response(GTP_SUCCESS);
-  gtp_mprintf("%C", color_to_move);
+  //gtp_mprintf("%C", color_to_move);
   return gtp_finish_response();
 }
 
@@ -2313,6 +2319,60 @@ gtp_dragon_status(char *s)
   return GTP_OK;
 }
 
+static int
+gtp_dragon_goirostatus(char *s)
+{
+  int i, j;
+  int str = NO_MOVE;
+  int pos;
+  int empty_response = 1;
+
+  if (gtp_decode_coord(s, &i, &j)) {
+    str = POS(i, j);
+    if (board[str] == EMPTY)
+      return gtp_failure("vertex must not be empty");
+  }
+  else if (sscanf(s, "%*s") != EOF)
+    return gtp_failure("invalid coordinate");
+
+  silent_examine_position(EXAMINE_DRAGONS);
+  
+  for (pos = BOARDMIN; pos < BOARDMAX; pos++) {
+    if (ON_BOARD(pos)
+	&& (pos == str
+	    || (str == NO_MOVE
+		&& board[pos] != EMPTY
+		&& dragon[pos].origin == pos))) {
+      if (str == NO_MOVE)
+	gtp_mprintf("%m: ", I(pos), J(pos));
+      
+      if (dragon[pos].status == ALIVE)
+	gtp_printf("alive\n");
+      else if (dragon[pos].status == DEAD)
+	gtp_printf("dead\n");
+      else if (dragon[pos].status == UNKNOWN)
+	gtp_printf("unknown\n");
+      else {
+	/* Only remaining possibility. */
+	assert(dragon[pos].status == CRITICAL); 
+	/* Status critical, need to return attack and defense point as well. */
+	gtp_mprintf("critical %m %m\n", 
+		    I(DRAGON2(pos).owl_attack_point),
+		    J(DRAGON2(pos).owl_attack_point),
+		    I(DRAGON2(pos).owl_defense_point),
+		    J(DRAGON2(pos).owl_defense_point));
+      }
+      empty_response = 0;
+    }
+  }
+
+  if (empty_response)
+    gtp_printf("\n");
+
+  gtp_printf("\n");
+  return GTP_OK;
+}
+
 
 /* Function:  Determine whether two stones belong to the same dragon.
  * Arguments: vertex, vertex
@@ -3567,6 +3627,16 @@ gtp_showboard(char *s)
   return gtp_finish_response();
 }
 
+static int
+gtp_showgoiroboard(char *s)
+{
+  UNUSED(s);
+  
+  //gtp_start_response(GTP_SUCCESS);
+  //gtp_printf("\n");
+  goiro_showboard(gtp_output_file);
+  return gtp_finish_response();
+}
 
 /* Function:  Dump stack to stderr.
  * Arguments: none
@@ -3657,6 +3727,73 @@ print_influence_data(struct influence_data *q, char *what_data)
   return GTP_OK;
 }
 
+static int
+print_goiroinfluence_data(struct influence_data *q, char *what_data)
+{
+  float white_influence[BOARDMAX];
+  float black_influence[BOARDMAX];
+  float white_strength[BOARDMAX];
+  float black_strength[BOARDMAX];
+  float white_attenuation[BOARDMAX]; 
+  float black_attenuation[BOARDMAX];
+  float white_permeability[BOARDMAX];
+  float black_permeability[BOARDMAX];
+  float territory_value[BOARDMAX];
+  int influence_regions[BOARDMAX];
+  int non_territory[BOARDMAX];
+  int m, n;
+  
+  float *float_pointer = NULL;
+  int *int_pointer = NULL;
+  
+  while (*what_data == ' ')
+    what_data++;
+
+  get_influence(q, white_influence, black_influence,
+		white_strength, black_strength,
+		white_attenuation, black_attenuation,
+		white_permeability, black_permeability,
+		territory_value, influence_regions, non_territory);
+
+  if (has_prefix(what_data, "white_influence"))
+    float_pointer = white_influence;
+  else if (has_prefix(what_data, "black_influence"))
+    float_pointer = black_influence;
+  else if (has_prefix(what_data, "white_strength"))
+    float_pointer = white_strength;
+  else if (has_prefix(what_data, "black_strength"))
+    float_pointer = black_strength;
+  else if (has_prefix(what_data, "white_attenuation"))
+    float_pointer = white_attenuation;
+  else if (has_prefix(what_data, "black_attenuation"))
+    float_pointer = black_attenuation;
+  else if (has_prefix(what_data, "white_permeability"))
+    float_pointer = white_permeability;
+  else if (has_prefix(what_data, "black_permeability"))
+    float_pointer = black_permeability;
+  else if (has_prefix(what_data, "territory_value"))
+    float_pointer = territory_value;
+  else if (has_prefix(what_data, "influence_regions"))
+    int_pointer = influence_regions;
+  else if (has_prefix(what_data, "non_territory"))
+    int_pointer = non_territory;
+  else
+    return gtp_failure("unknown influence data");
+  
+  for (m = 0; m < board_size; m++) {
+    for (n = 0; n < board_size; n++) {
+      if (float_pointer)
+	gtp_printf("%6.2f ", float_pointer[POS(m, n)]);
+      else
+	gtp_printf("%2d ", int_pointer[POS(m, n)]);
+    }
+  }
+  
+  /* We already have one newline and thus can't use gtp_finish_response(). */
+  gtp_printf("\n");
+  return GTP_OK;
+}
+
 /* Function:  Return information about the initial influence function.
  * Arguments: color to move, what information
  * Fails:     never
@@ -3710,6 +3847,24 @@ gtp_initial_influence(char *s)
   silent_examine_position(EXAMINE_ALL);
 
   return print_influence_data(q, s + n);
+}
+
+static int
+gtp_initial_goiroinfluence(char *s)
+{
+  int color;
+  struct influence_data *q;
+  int n;
+
+  n = gtp_decode_color(s, &color);
+  if (n == 0)
+    return gtp_failure("invalid color");
+
+  q = INITIAL_INFLUENCE(color);
+  
+  silent_examine_position(EXAMINE_ALL);
+
+  return print_goiroinfluence_data(q, s + n);
 }
 
 

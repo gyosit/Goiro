@@ -1,14 +1,15 @@
 /***
 * サーバー公開
 * 検討機能
-・back/forwardの挙動が安定しないので確認
+* back/forwardの挙動が安定しないので確認
+* 棋譜の上書き
+* 石の繋がり表示
 -----
 * 見学機能
 * パスワード
 * 自動申込
-・棋譜の上書き
-------
-* 石の繋がり表示
+* GnuGOからの返信を簡略化
+* Dragon情報の表示
 ***/
 package main
 
@@ -33,6 +34,7 @@ import (
 		"strconv"
 		"time"
 		"math/rand"
+		"encoding/base64"
 		"gopkg.in/olahol/melody.v1"
 		"github.com/jinzhu/gorm"
 		_ "github.com/jinzhu/gorm/dialects/mysql"
@@ -69,6 +71,12 @@ type SessionInfo struct{
 type playerKeys struct{
 	hash string
 	turn int // black:1, white:-1
+}
+
+type JsonRequest struct {
+	Name  string `json:"name"`
+	Date string  `json:"date"`
+	Img string `json:"img"`
 }
 
 var LoginInfo SessionInfo
@@ -257,6 +265,11 @@ func main() {
 		ctx.HTML(200, "message.html", gin.H{})
 	})
 
+	router.GET("/thumbnail/:name", func(ctx *gin.Context){
+		name := ctx.Param("name")
+		ctx.File("./assets/thumbnail/" + name)
+	})
+
 	router.POST("/regist", func(ctx *gin.Context){
 		var form User
 		username := ctx.PostForm("username")
@@ -389,6 +402,20 @@ func main() {
 		}
 	})
 
+	router.POST("/save_image", func(ctx *gin.Context){
+		var json JsonRequest
+		if err := ctx.ShouldBindJSON(&json); err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		name := json.Name+json.Date
+		name = strings.Replace(name, "/", "_", -1)
+		name = strings.Replace(name, ":", "_", -1)
+		name = strings.Replace(name, " ", "", -1)
+		decode(json.Img, name)
+		ctx.JSON(http.StatusOK, gin.H{"url": name})
+	})
+
 	m.HandleConnect(func(s *melody.Session){
 		fmt.Println(s.Request.URL.Path)
 	})
@@ -415,6 +442,7 @@ func main() {
 		hash := hash_table[user]
 		original_hash := hash
 		room := getRoom(hash)
+		fmt.Println(string(msg)+"\n")
 		parse := strings.Split(string(msg), " ")
 		senrigan := false
 		fmt.Println(turn[hash])
@@ -807,10 +835,10 @@ func main() {
 		sendClient(m, s, "turn:"+last, true, hash_table)*/
 	})
 
-	//router.Run(":1780")
-	router.RunTLS(":1780", 
-		"/etc/letsencrypt/live/goiro.net/fullchain.pem",
-		"/etc/letsencrypt/live/goiro.net/privkey.pem")
+	router.Run(":1780")
+	// router.RunTLS(":1780", 
+	// 	"/etc/letsencrypt/live/goiro.net/fullchain.pem",
+	// 	"/etc/letsencrypt/live/goiro.net/privkey.pem")
 }
 
 func execDB(db *sql.DB, q string){
@@ -1221,4 +1249,27 @@ func overrideKifu(hash string) int{
 	fmt.Println(turn)
 	fmt.Printf("\n")
 	return turn
+}
+
+func decode(str, name string){
+	str = strings.Split(str, ",")[1]
+	filename := "./assets/thumbnail/" + name + ".png"
+	data, _ := base64.StdEncoding.DecodeString(str) //[]byte
+
+	file, _ := os.Create(filename)
+	defer file.Close()
+	fmt.Printf(filename+"\n")
+	file.Write(data)
+	createTextfile(name)
+}
+
+func createTextfile(name string){
+	file, _ := os.Create("./assets/html/" + name + ".html")
+	defer file.Close()
+	lines := []string{"<meta name=\"twitter:image\" content=\"https://goiro.net/thumbnail/" + name + ".png\" />\n",
+					 "<script>setTimeout(function () {window.location = 'https://goiro.net';}, 100);</script>\n"}
+	for _, line := range lines{
+		b := []byte(line)
+		file.Write(b)
+	}
 }
