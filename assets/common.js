@@ -88,6 +88,7 @@ var change_f = function() {
   deleteImage("board");
   initGoban(board_size);
   visibleLink(link_visible);
+  socket.send("show");
 }
 
 var senrigan_f = function() {
