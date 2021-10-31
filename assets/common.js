@@ -44,6 +44,7 @@ window_h = document.documentElement.clientHeight;
 //document.body.appendChild(app.view);
 document.body.appendChild(renderer.view);
 var stage = new PIXI.Container();
+stage.sortableChildren = true;
 
 var black = "";
 var white = "";
@@ -51,6 +52,7 @@ var c_b = "0";
 var c_w = "0";
 
 var senrigan = false;
+var stone_state = 0;
 var link_visible = true;
 let times = 0;
 var review_times = 0;
@@ -69,7 +71,22 @@ var resign_f = function() {
 }
 
 var change_f = function() {
-  link_visible = !link_visible;
+  switch(stone_state){
+  case 0:
+    link_visible = false;
+    stone_state = 1;
+    break;
+  case 1:
+    stone_state = 2;
+    socket.send("show");
+    break;
+  case 2:
+    link_visible = true;
+    stone_state = 0;
+    break;
+  }
+  deleteImage("board");
+  initGoban(board_size);
   visibleLink(link_visible);
 }
 
@@ -445,8 +462,14 @@ socket.onmessage = function(msg){
         x = size-1;
         y -= 1;
       }
-      var black_t = 0xdc143c;
-      var white_t = 0x87ceeb;
+      if(stone_state == 2){
+        var black_t = 0xff1b0f;
+        var white_t = 0x921b96;
+      }else{
+        var black_t = 0xdc143c;
+        var white_t = 0x87ceeb;
+      }
+
       switch(v){
         case "-3":
           makeImage(x, y, black_t, "territory", 0.2, SIDE, board_size);
@@ -838,8 +861,14 @@ function initGoban(size){
     board_color = 0x2e2930;
     line_color = 0x8d6449;
   }else{
-    board_color = 0xf5deb3;
-    line_color = 0x8d6449;
+    console.log(stone_state);
+    if(stone_state == 2){
+      board_color = 0x807b6c;
+      line_color = 0xfff8eb;
+    }else{
+      board_color = 0xf5deb3;
+      line_color = 0x8d6449;
+    }
   }
 
   let gobanSprite = new PIXI.Graphics();
@@ -1036,7 +1065,7 @@ function loadImage(x, y, name){
   texture["button"].push(objSprite);
 }
 
-function putImage(x, y, name, type, alpha=1){
+function putImage(x, y, name, type, height, width, alpha=1){
   let X, Y;
   X = x;
   Y = y;
@@ -1046,10 +1075,10 @@ function putImage(x, y, name, type, alpha=1){
     .add(name, path + name + ".png")
     .load((loader, resources)=>{
       let objSprite = new PIXI.Sprite(PIXI.utils.TextureCache[name]);
-      objSprite.x = x;
-      objSprite.y = y;
-      objSprite.scale.x = 0.4;
-      objSprite.scale.y = 0.4;
+      objSprite.x = x-width/2;
+      objSprite.y = y-height/2;
+      objSprite.height = height;
+      objSprite.width = width;
       objSprite.alpha = alpha;
       stage.addChild(objSprite);
       addTexture(type, objSprite);
@@ -1088,16 +1117,24 @@ function makeImage(x, y, color, type, alpha, size, board_size){
     // putImage(x, y, tmp_color, type, alpha*8)
     break;
   case "stone":
-    if(color == 0x000000){
-      line_color = 0xffffff;
+    if(stone_state == 2){
+      if(color == 0x000000){
+        putImage(x, y, "pumpkin", type, height=ds, width=ds, alpha=0.9);
+      }else{
+        putImage(x, y, "ghost", type, height=ds, width=ds, alpha=0.9);
+      }
     }else{
-      line_color = 0x000000;
+      if(color == 0x000000){
+        line_color = 0xffffff;
+      }else{
+        line_color = 0x000000;
+      }
+      var material = new PIXI.Graphics()
+        .lineStyle(2, line_color, 1)
+        .beginFill(color, alpha)
+        .drawCircle(x, y, ds/2)
+        .endFill();
     }
-    var material = new PIXI.Graphics()
-      .lineStyle(2, line_color, 1)
-      .beginFill(color, alpha)
-      .drawCircle(x, y, ds/2)
-      .endFill();
     break;
   case "bless":
     var material = new PIXI.Graphics()
@@ -1303,6 +1340,9 @@ function makeImage(x, y, color, type, alpha, size, board_size){
     break;
   }
   if(material != undefined){
+    if(type=="last"){
+      material.zIndex = 10;
+    }
     stage.addChild(material);
     texture[type].push(material);
   }
@@ -1469,9 +1509,9 @@ function putStone(e) {
    let w_ter = 0x87ceeb;
    let b_ter = 0xdc143c;
    let left = X;
-   let base_len = (window_w - left)/2;
-   let b_len = Math.max(0, base_len+score*15);
-   let w_len = Math.max(0, base_len-score*15);
+   let base_len = (GAME_WIDTH - left)/2;
+   let b_len = Math.max(0, base_len+score*10);
+   let w_len = Math.max(0, base_len-score*10);
    var w_bar = new PIXI.Graphics()
      .beginFill(w_ter)
      .drawRect(left+b_len, Y, w_len, 10)
@@ -1515,6 +1555,7 @@ function resize() {
                   Math.ceil(GAME_HEIGHT * ratio));
   switch(scene){
     case "home":
+      senrigan = false;
       if(username != "")
         inithome();
       else
