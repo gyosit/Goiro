@@ -7,22 +7,27 @@ home: ホーム画面
 play: プレイ画面
 review: 検討画面
 */
-var SIDE = 500;
+var SIDE = 650;
 var margin = 100;
 var window_w = document.documentElement.clientWidth;
 var window_h = document.documentElement.clientHeight;
-if (window_w > window_h){
-  var GAME_WIDTH = SIDE+margin*2+220;
-  var GAME_HEIGHT = SIDE+margin;
-}else{
-  var GAME_WIDTH = SIDE+margin;
-  var GAME_HEIGHT = SIDE+margin*2+240;
-}
+// if (window_w > window_h){
+//   var GAME_WIDTH = SIDE+margin*2+220;
+//   var GAME_HEIGHT = SIDE+margin;
+// }else{
+//   var GAME_WIDTH = SIDE+margin;
+//   var GAME_HEIGHT = SIDE+margin*2+240;
+// }
+var GAME_WIDTH = 1100;
+var GAME_HEIGHT = 780;
+
+stage = new PIXI.Container();
 
 var rendererOptions = {
   antialiasing: false,
   transparent: false,
-  resolution: window.devicePixelRatio,
+  antialias:true,
+  resolution: window.devicePixelRatio || 1,
   autoResize: true,
   preserveDrawingBuffer: true,
   backgroundColor : 0x1099bb
@@ -30,7 +35,7 @@ var rendererOptions = {
   
 // Create the canvas in which the game will show, and a
 // generic container for all the graphical objects
-var renderer = PIXI.autoDetectRenderer(GAME_WIDTH, GAME_HEIGHT, rendererOptions, {preserveDrawingBuffer: true});
+var renderer = PIXI.autoDetectRenderer(window.innerWidth, window.innerHeight, rendererOptions);
   
 // Put the renderer on screen in the corner
 renderer.view.style.position = "absolute";
@@ -43,7 +48,6 @@ window_h = document.documentElement.clientHeight;
 //let app = new PIXI.Application({width: window_w-10, height: window_h-10})
 //document.body.appendChild(app.view);
 document.body.appendChild(renderer.view);
-var stage = new PIXI.Container();
 stage.sortableChildren = true;
 
 var black = "";
@@ -121,12 +125,26 @@ var vshuman_f = function(){
 }
 var vscom_f = function(){
   // AI対戦設定画面
+  let graphic_setting = {
+    top_margin: 10,
+    btn_h: 60,
+    middle_margin: 60,
+    text_len: 450,
+    x2: 450,
+    x3: 520,
+    x4: 850,
+    buttle_btn_h: 140
+  }
+
   deleteImage("button");
   deleteImage("text");
   
-  putText(0, 50, "強さ", font_style, "text");
-  putText(350, 50, "普通", font_style, "level");
-  makeButton(300, 50, "back", function(){
+  let item_y = function(n){
+    return graphic_setting["top_margin"] + (graphic_setting["btn_h"] + graphic_setting["middle_margin"])*n;
+  };
+  putText(0, item_y(0), "強さ", font_style_home, "text");
+  putText(graphic_setting["x3"], item_y(0), "普通", font_style_home, "level");
+  makeButton2(graphic_setting["x2"], item_y(0), graphic_setting["btn_h"], "back", function(){
     let t = getText("level");
     switch(t){
       case "普通":
@@ -137,7 +155,7 @@ var vscom_f = function(){
         break;
     }
   });
-  makeButton(550, 50, "forward", function(){
+  makeButton2(graphic_setting["x4"], item_y(0), graphic_setting["btn_h"], "forward", function(){
     let t = getText("level");
     switch(t){
       case "普通":
@@ -148,9 +166,9 @@ var vscom_f = function(){
         break;
     }
   });
-  putText(0, 100, "盤のサイズ", font_style, "text");
-  putText(350, 100, "9", font_style, "b_size");
-  makeButton(300, 100, "back", function(){
+  putText(0, item_y(1), "盤のサイズ", font_style_home, "text");
+  putText(graphic_setting["x3"], item_y(1), "9", font_style_home, "b_size");
+  makeButton2(graphic_setting["x2"], item_y(1), graphic_setting["btn_h"], "back", function(){
     let t = getText("b_size");
     switch(t){
       case "19":
@@ -164,7 +182,7 @@ var vscom_f = function(){
         break;
     }
   });
-  makeButton(550, 100, "forward", function(){
+  makeButton2(graphic_setting["x4"], item_y(1), graphic_setting["btn_h"], "forward", function(){
     let t = getText("b_size");
     switch(t){
       case "19":
@@ -178,9 +196,9 @@ var vscom_f = function(){
         break;
     }
   });
-  putText(0, 150, "コミ(白が得る地)", font_style, "text");
-  putText(350, 150, "6.5", font_style, "komi");
-  makeButton(300, 150, "back", function(){
+  putText(0, item_y(2), "コミ(白が得る地)", font_style_home, "text");
+  putText(graphic_setting["x3"],  item_y(2), "6.5", font_style_home, "komi");
+  makeButton2(graphic_setting["x2"],  item_y(2), graphic_setting["btn_h"], "back", function(){
     let t = parseFloat(getText("komi"));
     switch(t){
       case 0.5:
@@ -194,7 +212,7 @@ var vscom_f = function(){
         break;
     }
   });
-  makeButton(550, 150, "forward", function(){
+  makeButton2(graphic_setting["x4"],  item_y(2), graphic_setting["btn_h"], "forward", function(){
     let t = parseFloat(getText("komi"));
     switch(t){
       case -0.5:
@@ -208,9 +226,9 @@ var vscom_f = function(){
         break;
     }
   });
-  putText(0, 200, "手番", font_style, "text");
-  putText(350, 200, "にぎり(ランダム)", font_style, "turn_set");
-  makeButton(300, 200, "back", function(){
+  putText(0,  item_y(3), "手番", font_style_home, "text");
+  putText(graphic_setting["x3"], item_y(3), "にぎり(ランダム)", font_style_home, "turn_set");
+  makeButton2(graphic_setting["x2"], item_y(3), graphic_setting["btn_h"], "back", function(){
     let t = getText("turn_set");
     switch(t){
       case "黒番":
@@ -224,7 +242,7 @@ var vscom_f = function(){
         break;
     }
   });
-  makeButton(550, 200, "forward", function(){
+  makeButton2(graphic_setting["x4"], item_y(3), graphic_setting["btn_h"], "forward", function(){
     let t = getText("turn_set");
     switch(t){
       case "黒番":
@@ -238,18 +256,18 @@ var vscom_f = function(){
         break;
     }
   });
-  putText(0, 250, "ハンデ(黒が置く石の数)", font_style, "text");
-  putText(350, 250, "0", font_style, "hande");
-  makeButton(300, 250, "back", function(){
+  putText(0, item_y(4), "ハンデ(黒が置く石の数)", font_style_home, "text");
+  putText(graphic_setting["x3"], item_y(4), "0", font_style_home, "hande");
+  makeButton2(graphic_setting["x2"], item_y(4), graphic_setting["btn_h"], "back", function(){
     let t = parseFloat(getText("hande"));
     if(t > 0) editText("hande", t-1);
   });
-  makeButton(550, 250, "forward", function(){
+  makeButton2(graphic_setting["x4"], item_y(4), graphic_setting["btn_h"], "forward", function(){
     let t = parseFloat(getText("hande"));
     if(t < 9) editText("hande", t+1);
   });
-  makeButton(100, 350, "backarrow", resize);
-  makeButton(300, 350, "vscom_start", function(){
+  makeButton2(100, item_y(5), graphic_setting["btn_h"], "backarrow", resize);
+  makeButton2(300, item_y(5), graphic_setting["buttle_btn_h"], "vscom_start", function(){
     scene = "play";
     let level = getText("level");
     board_size = getText("b_size");
@@ -271,11 +289,27 @@ var vscom_f = function(){
 }
 var vsfree_f = function(){
   // 自由碁盤設定画面
+  let graphic_setting = {
+    top_margin: 10,
+    btn_h: 60,
+    middle_margin: 60,
+    text_len: 450,
+    x2: 450,
+    x3: 520,
+    x4: 850,
+    buttle_btn_h: 140
+  }
+
   deleteImage("button");
   deleteImage("text");
-  putText(0, 100, "盤のサイズ", font_style, "text");
-  putText(350, 100, "9", font_style, "b_size");
-  makeButton(300, 100, "back", function(){
+
+  let item_y = function(n){
+    return graphic_setting["top_margin"] + (graphic_setting["btn_h"] + graphic_setting["middle_margin"])*n;
+  };
+
+  putText(0, item_y(0), "盤のサイズ", font_style_home, "text");
+  putText(graphic_setting["x3"], item_y(0), "9", font_style_home, "b_size");
+  makeButton2(graphic_setting["x2"], item_y(0), graphic_setting["btn_h"], "back", function(){
     let t = getText("b_size");
     switch(t){
       case "19":
@@ -289,7 +323,7 @@ var vsfree_f = function(){
         break;
     }
   });
-  makeButton(550, 100, "forward", function(){
+  makeButton2(graphic_setting["x4"], item_y(0), graphic_setting["btn_h"], "forward", function(){
     let t = getText("b_size");
     switch(t){
       case "19":
@@ -303,9 +337,9 @@ var vsfree_f = function(){
         break;
     }
   });
-  putText(0, 150, "コミ(白が得る地)", font_style, "text");
-  putText(350, 150, "6.5", font_style, "komi");
-  makeButton(300, 150, "back", function(){
+  putText(0, item_y(1), "コミ(白が得る地)", font_style_home, "text");
+  putText(graphic_setting["x3"], item_y(1), "6.5", font_style_home, "komi");
+  makeButton2(graphic_setting["x2"], item_y(1), graphic_setting["btn_h"], "back", function(){
     let t = parseFloat(getText("komi"));
     switch(t){
       case 0.5:
@@ -319,7 +353,7 @@ var vsfree_f = function(){
         break;
     }
   });
-  makeButton(550, 150, "forward", function(){
+  makeButton2(graphic_setting["x4"], item_y(1), graphic_setting["btn_h"], "forward", function(){
     let t = parseFloat(getText("komi"));
     switch(t){
       case -0.5:
@@ -333,18 +367,18 @@ var vsfree_f = function(){
         break;
     }
   });
-  putText(0, 200, "ハンデ(黒が置く石の数)", font_style, "text");
-  putText(350, 200, "0", font_style, "hande");
-  makeButton(300, 200, "back", function(){
+  putText(0, item_y(2), "ハンデ(黒が置く石の数)", font_style_home, "text");
+  putText(graphic_setting["x3"], item_y(2), "0", font_style_home, "hande");
+  makeButton2(graphic_setting["x2"], item_y(2), graphic_setting["btn_h"], "back", function(){
     let t = parseFloat(getText("hande"));
     if(t > 0) editText("hande", t-1);
   });
-  makeButton(550, 200, "forward", function(){
+  makeButton2(graphic_setting["x4"], item_y(2), graphic_setting["btn_h"], "forward", function(){
     let t = parseFloat(getText("hande"));
     if(t < 9) editText("hande", t+1);
   });
-  makeButton(100, 300, "backarrow", resize);
-  makeButton(300, 300, "vsfree_start", function(){
+  makeButton2(100, item_y(3), graphic_setting["btn_h"], "backarrow", resize);
+  makeButton2(300, item_y(3), graphic_setting["buttle_btn_h"], "vsfree_start", function(){
     scene = "play";
     board_size = getText("b_size");
     let komi = getText("komi");
@@ -364,7 +398,9 @@ var vsfree_f = function(){
 }
 
 var texture = {"board": [], 
+              "board_line": [],
               "stone": [],
+              "dead": [],
               "territory": [],
               "bless": [],
               "last": [],
@@ -412,7 +448,8 @@ var b_events = {"pass": pass_f,
                 "vshuman": vshuman_f,
                 "vscom": vscom_f,
                 "vsfree": vsfree_f, };
-var font_style = {font:'60pt Arial', fill:'black'};
+var font_style = {font:'Arial', fill:'black'};
+var font_style_home = {font:'Arial', fill:'black', fontSize: 40};
 
 var url = "wss://" + window.location.host + ":1780" + "/connect/" + username+ "/ws";
 //var url = "ws://" + window.location.host + "/connect/" + username+ "/ws";
@@ -473,22 +510,22 @@ socket.onmessage = function(msg){
 
       switch(v){
         case "-3":
-          makeImage(x, y, black_t, "territory", 0.2, SIDE, board_size);
+          makeImage(x, y, black_t, "territory", 0.7, SIDE, board_size);
           break;
         case "-2":
-          makeImage(x, y, black_t, "territory", 0.1, SIDE, board_size);
+          makeImage(x, y, black_t, "territory", 0.2, SIDE, board_size);
           break;
         case "-1":
-          makeImage(x, y, black_t, "territory", 0.05, SIDE, board_size);
+          makeImage(x, y, black_t, "territory", 0.1, SIDE, board_size);
           break;
         case "3":
-          makeImage(x, y, white_t, "territory", 0.2, SIDE, board_size);
+          makeImage(x, y, white_t, "territory", 0.7, SIDE, board_size);
           break;
         case "2":
-          makeImage(x, y, white_t, "territory", 0.1, SIDE, board_size);
+          makeImage(x, y, white_t, "territory", 0.2, SIDE, board_size);
           break;
         case "1":
-          makeImage(x, y, white_t, "territory", 0.05, SIDE, board_size);
+          makeImage(x, y, white_t, "territory", 0.1, SIDE, board_size);
           break;
         default:
           break;
@@ -639,6 +676,32 @@ socket.onmessage = function(msg){
     console.log()
     visibleLink(link_visible);
     break;
+  }case "alive_dead":{
+    deleteImage("dead");
+    if(scene != "play") return;
+    obj = msg['data'].split(":")[1].split(",");
+    let size = Math.sqrt(obj.length);
+    let i = 1;
+    console.log(obj);
+    obj.forEach(v => {
+      y = Math.floor(i / size);
+      x = i % size - 1;
+      if(x < 0){
+        x = size-1;
+        y -= 1;
+      }
+      var mark_color = 0xff0000;
+      switch(v){
+        case "dead":
+          makeImage(x, y, mark_color, "dead", 1, SIDE, board_size);
+          break;
+        default:
+          break;
+      }
+      i++;
+    })
+    console.log(texture["alive_dead"]);
+    break;
   }case "pass":{
     if(scene != "play") return;
     deleteImage("message");
@@ -680,11 +743,11 @@ socket.onmessage = function(msg){
     deleteImage("score");
     makeText(SIDE+margin, "Good Game!" + msg['data'].split(":")[1].split(" ")[0], font_style, "score");
     scene = "home";
-    makeButton(0, 0, "backarrow", function(){
+    makeButton2(SIDE+margin+10, info_y["button"]*90+250, 90, "backarrow", function(){
       scene = "home";
       resize();
     });
-    makeButton(50, 0, "tweet", function(){
+    makeButton2(SIDE+margin+100, info_y["button"]*90+250, 78, "tweet", function(){
       console.log("tweet");
       renderer.render(stage);
       let c = renderer.view.toDataURL("image/png", 1);
@@ -773,30 +836,17 @@ socket.onmessage = function(msg){
       let loader = new PIXI.Loader();
       let review_times_ = review_times
       review_times++;
-      loader
-        .add(img_path, "/assets/images/" + img_path + ".png")
-        .load((loader, resources)=>{
-          console.log(`LOADING... ${review_times_}, ${i}`);
-          let objSprite = new PIXI.Sprite(PIXI.utils.TextureCache[img_path]);
-          objSprite.x = 100;
-          objSprite.y = review_times_*150;
-          objSprite.scale.x = 0.4;
-          objSprite.scale.y = 0.4;
-          objSprite.interactive = true;
-          objSprite.on('pointertap', function(){
-            socket.send(`openreview ${hash}`);
-            board_size = size;
-            scene = "play";
-            mode = "free";
-            resize();
-            socket.send("show");
-          });
-          stage.addChild(objSprite);
-          texture["button"].push(objSprite);
-          putText(110, review_times_*150+50, `${size}路盤/コミ${komi}目/ハンデ${hande}子\n●${black}/○${white}\n${winner}`);
-          renderer.render(stage);
-          console.log("complete!");
-        });
+      makeButton2(100, review_times_*210, 200, img_path, function(){
+        socket.send(`openreview ${hash}`);
+        board_size = size;
+        scene = "play";
+        mode = "free";
+        resize();
+        socket.send("show");
+      });
+      putText(110, review_times_*210+50, `${size}路盤/コミ${komi}目/ハンデ${hande}子\n●${black}/○${white}\n${winner}`, font_style_home);
+      renderer.render(stage);
+      console.log("complete!");
     }
       //putText(100, review_times*200, "${size}路盤/コミ${komi}目/ハンデ${hande}子\n●${black}/○${white}");
       console.log(stage);
@@ -809,13 +859,34 @@ socket.onmessage = function(msg){
   renderer.render(stage);
 }
 
-resize();
+//resize();
 window.addEventListener('load', resize);
 window.addEventListener("resize", resize2);
- 
+
+
+
 /***           ***
  *** =>Functions *** 
 ***           ***/
+function isSmartPhone() {
+  if (window.matchMedia && window.matchMedia('(max-device-width: 640px)').matches) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+function fullscreen(){
+  // html要素を取得
+  var rootElement = document.documentElement;
+
+  // メソッドを統一 (本実装されてないブラウザが多い)
+  rootElement.requestFullscreen = rootElement.requestFullscreen || rootElement.mozRequestFullScreen || rootElement.webkitRequestFullscreen || rootElement.msRequestFullscreen;
+
+  // メソッドを実行
+  rootElement.requestFullscreen();
+}
+
 function detectXY(x, y, size, board_size){
   var xmin = 1e9;
   var ymin = 1e9;
@@ -849,6 +920,7 @@ function addTexture(key, obj, front=false){
  
 function initGoban(size){
   var stars = [];
+  let line_thick = 4;
   if (size == 9){
       stars = [2, 6];
   }else if(size==13){
@@ -865,7 +937,7 @@ function initGoban(size){
     console.log(stone_state);
     if(stone_state == 2){
       board_color = 0x807b6c;
-      line_color = 0xfff8eb;
+      line_color = 0x006400;
     }else{
       board_color = 0xf5deb3;
       line_color = 0x8d6449;
@@ -883,12 +955,12 @@ function initGoban(size){
   var line = new PIXI.Graphics();
   var gap = SIDE/(size-1);
   for(var i=0;i<size;i++){
-    line.lineStyle(2, line_color).moveTo(margin/2, gap*i+margin/2).lineTo(SIDE+margin/2, gap*i+margin/2);
+    line.lineStyle(line_thick, line_color).moveTo(margin/2, gap*i+margin/2).lineTo(SIDE+margin/2, gap*i+margin/2);
     stage.addChildAt(line, 0);
     texture["board"].push(line);
   }
   for(var i=0;i<size;i++){
-    line.lineStyle(2, line_color).moveTo(gap*i+margin/2, margin/2).lineTo(gap*i+margin/2, SIDE+margin/2);
+    line.lineStyle(line_thick, line_color).moveTo(gap*i+margin/2, margin/2).lineTo(gap*i+margin/2, SIDE+margin/2);
     stage.addChildAt(line, 0);
     texture["board"].push(line);
   }
@@ -930,19 +1002,20 @@ function initGoban(size){
 
   //makeButton(SIDE+margin+10, "BUTTON", 0xff0000, "blue", "yellow");
   if(mode != "free"){
-    loadImage(SIDE+margin+10, info_y["button"]*30, "pass");
-    loadImage(SIDE+margin+90, info_y["button"]*30, "resign");
-    loadImage(SIDE+margin+170, info_y["button"]*30, "senrigan");
-    loadImage(SIDE+margin+260, info_y["button"]*30, "change");
+    makeButton2(SIDE+margin+10, info_y["button"]*30+250, 100, "pass", b_events["pass"]);
+    makeButton2(SIDE+margin+10, info_y["button"]*50+250, 100, "resign", b_events["resign"]);
+    makeButton2(SIDE+margin+10, info_y["button"]*70+250, 100, "senrigan", b_events["senrigan"]);
+    makeButton2(SIDE+margin+200, info_y["button"]*30+250, 100, "change", b_events["change"]);
   }else{
-    loadImage(SIDE+margin+10, info_y["button"]*30, "pass");
-    loadImage(SIDE+margin+10, info_y["button2"]*30, "head");
-    loadImage(SIDE+margin+100, info_y["button2"]*30, "back");
-    loadImage(SIDE+margin+160, info_y["button2"]*30, "forward");
-    loadImage(SIDE+margin+220, info_y["button2"]*30, "end");
-    loadImage(SIDE+margin+10, info_y["button3"]*30, "resume");
-    loadImage(SIDE+margin+100, info_y["button3"]*30, "override");
-    makeButton(0, 0, "backarrow", function(){
+    makeButton2(SIDE+margin+10, info_y["button"]*30+250, 70, "pass", b_events["pass"]);
+    makeButton2(SIDE+margin+200, info_y["button"]*30+250, 70, "change", b_events["change"]);
+    makeButton2(SIDE+margin+10, info_y["button"]*45+250, 70, "head", b_events["head"]);
+    makeButton2(SIDE+margin+220, info_y["button"]*45+250, 70, "back", b_events["back"]);
+    makeButton2(SIDE+margin+10, info_y["button"]*60+250, 70, "forward", b_events["forward"]);
+    makeButton2(SIDE+margin+130, info_y["button"]*60+250, 70, "end", b_events["end"]);
+    makeButton2(SIDE+margin+10, info_y["button"]*75+250, 70, "resume", b_events["resume"]);
+    makeButton2(SIDE+margin+190, info_y["button"]*75+250, 70, "override", b_events["override"]);
+    makeButton2(SIDE+margin+10, info_y["button"]*88+250, 100, "backarrow", function(){
       scene = "home";
       socket.send("leave");
       resize();
@@ -954,42 +1027,52 @@ function initGoban(size){
 function inithome(){
   let background = new PIXI.Texture.from("/assets/images/background.png");
   let backSprit = new PIXI.Sprite(background);
+  let graphic_setting = {
+    top_margin: 40,
+    menu_margin: 30,
+    menu_btn_h: 140,
+    middle_margin: 10,
+    buttle_btn_h: 140
+  }
   backSprit.x = 0;
   backSprit.y = 0;
-  backSprit.width = 920;
-  backSprit.height = 610;
+  backSprit.width = GAME_WIDTH;
+  backSprit.height = GAME_HEIGHT;
   stage.addChildAt(backSprit, 0);
   addTexture("image", backSprit);
-  putText(0, 0, "ようこそ "+ username + "さん!", font_style, "text");
-  makeButton(0, 30, "review", function(){
+  putText(0, 0, "ようこそ "+ username + "さん!", font_style_home, "text");
+
+  /* メニューボタン */
+  let menu_x = graphic_setting["menu_btn_h"]+graphic_setting["menu_margin"];
+  makeButton2(0, graphic_setting["top_margin"], graphic_setting["menu_btn_h"], "review", function(){
     scene = "review";
     review_times = 0;
     review_index = 0;
     resize();
   });
-  makeButton(60, 30, "history", function(){
+  makeButton2(menu_x*1, graphic_setting["top_margin"], graphic_setting["menu_btn_h"], "history", function(){
     window.location.href = 'history';
   });
-  makeButton(150, 30, "thanks", function(){
+  makeButton2(menu_x*2, graphic_setting["top_margin"], graphic_setting["menu_btn_h"], "thanks", function(){
     window.location.href = 'thanks';
   });
-  makeButton(280, 30, "twitter", function(){
+  makeButton2(menu_x*3, graphic_setting["top_margin"], graphic_setting["menu_btn_h"], "twitter", function(){
     window.open('https://twitter.com/Mr_isoy', '_blank');
   });
-  makeButton(390, 30, "message", function(){
+  makeButton2(menu_x*4, graphic_setting["top_margin"], graphic_setting["menu_btn_h"], "message", function(){
     window.location.href = 'message';
   });
-  makeButton(495, 30, "logout", function(){
+  makeButton2(menu_x*5, graphic_setting["top_margin"], graphic_setting["menu_btn_h"],  "logout", function(){
     username = "";
     window.location.href = 'logout';
   });
-  putText(0, 500, 
+  putText(0, graphic_setting["top_margin"]+graphic_setting["menu_btn_h"]+graphic_setting["middle_margin"]*4+graphic_setting["buttle_btn_h"]*3, 
 `本サイトはまだ試作段階です。
 サーバーダウンやセキュリティ問題等に責任を負えません。
-不具合・要望は作者に連絡いただけると幸いです。`, font_style, "text")
-  makeButton(0, 140, "vshuman", vshuman_f);
-  makeButton(0, 220, "vscom", vscom_f);
-  makeButton(0, 300, "vsfree", vsfree_f);
+不具合・要望は作者に連絡いただけると幸いです。`, font_style_home, "text")
+  makeButton2(0, graphic_setting["top_margin"]+graphic_setting["menu_btn_h"]+graphic_setting["middle_margin"], 120, "vshuman", vshuman_f);
+  makeButton2(0, graphic_setting["top_margin"]+graphic_setting["menu_btn_h"]+graphic_setting["middle_margin"]*2+graphic_setting["buttle_btn_h"], graphic_setting["menu_btn_h"], "vscom", vscom_f);
+  makeButton2(0, graphic_setting["top_margin"]+graphic_setting["menu_btn_h"]+graphic_setting["middle_margin"]*3+graphic_setting["buttle_btn_h"]*2, graphic_setting["menu_btn_h"], "vsfree", vsfree_f);
   
   console.log(stage);
   renderer.render(stage);
@@ -1000,15 +1083,15 @@ function initLogin(){
   let backSprit = new PIXI.Sprite(background);
   backSprit.x = 0;
   backSprit.y = 0;
-  backSprit.width = 920;
-  backSprit.height = 610;
+  backSprit.width = GAME_WIDTH;
+  backSprit.height = GAME_HEIGHT;
   stage.addChildAt(backSprit, 0);
   addTexture("image", backSprit);
   putText(0, 0, "碁色へようこそ!\nここは新感覚囲碁サイトです。\nまずはユーザー登録かログインをお願いします！", font_style, "text");
-  makeButton(0, 140, "regist", function(){
+  makeButton2(0, 150, 100, "regist", function(){
     window.location.href = 'regist';
   });
-  makeButton(0, 220, "login", function(){
+  makeButton2(0, 250, 100, "login", function(){
     window.location.href = 'login';
   });
   putText(0, 500, 
@@ -1022,20 +1105,20 @@ function initReview(){
   let backSprit = new PIXI.Sprite(background);
   backSprit.x = 0;
   backSprit.y = 0;
-  backSprit.width = 920;
-  backSprit.height = 610;
+  backSprit.width = GAME_WIDTH;
+  backSprit.height = GAME_HEIGHT;
   addTexture("image", backSprit);
-  makeButton(0, 0, "backarrow", function(){
+  makeButton2(0, 0, 100, "backarrow", function(){
     scene = "home";
     resize();
   });
-  makeButton(10, 100, "uparrow", function(){
+  makeButton2(10, 100, 200, "uparrow", function(){
     review_times = 0;
     review_index = Math.max(review_index-4, 0);
     console.log(review_index);
     resize();
   });
-  makeButton(10, 400, "downarrow", function(){
+  makeButton2(10, 400, 200 ,"downarrow", function(){
     review_times = 0;
     review_index += 4;
     console.log(review_index);
@@ -1071,19 +1154,28 @@ function putImage(x, y, name, type, height, width, alpha=1){
   X = x;
   Y = y;
   let path = "/assets/images/";
-  let loader = new PIXI.Loader();
-  loader
-    .add(name, path + name + ".png")
-    .load((loader, resources)=>{
-      let objSprite = new PIXI.Sprite(PIXI.utils.TextureCache[name]);
-      objSprite.x = x-width/2;
-      objSprite.y = y-height/2;
-      objSprite.height = height;
-      objSprite.width = width;
-      objSprite.alpha = alpha;
-      stage.addChild(objSprite);
-      addTexture(type, objSprite);
-    });
+  if(PIXI.utils.TextureCache[name] == undefined){
+    let loader = new PIXI.Loader();
+    loader
+      .add(name, path + name + ".png")
+      .load((loader, resources)=>{
+        drawImage(x, y, name, type, height, width, alpha=1);
+      });
+    }else{
+      drawImage(x, y, name, type, height, width, alpha=1);
+    }
+}
+
+function drawImage(x, y, name, type, height, width, alpha=1){
+  let objSprite = new PIXI.Sprite(PIXI.utils.TextureCache[name]);
+  objSprite.x = x-width/2;
+  objSprite.y = y-height/2;
+  objSprite.height = height;
+  objSprite.width = width;
+  objSprite.alpha = alpha;
+  objSprite.roundPixels = true;
+  stage.addChild(objSprite);
+  addTexture(type, objSprite);
 }
 
 function makeImage(x, y, color, type, alpha, size, board_size){
@@ -1094,6 +1186,7 @@ function makeImage(x, y, color, type, alpha, size, board_size){
   let line_color; 
   switch(type){
   case "territory":
+    ds /=2;
     var material = new PIXI.Graphics()
       .beginFill(color, alpha)
       .drawPolygon([
@@ -1103,6 +1196,8 @@ function makeImage(x, y, color, type, alpha, size, board_size){
         x-ds, y+ds,
       ])
       .endFill();
+    let blurFilter = new PIXI.filters.BlurFilter(strength=32);
+    material.filters = [blurFilter];
     // squid
     // if(true){
     //   break;
@@ -1136,6 +1231,9 @@ function makeImage(x, y, color, type, alpha, size, board_size){
         .drawCircle(x, y, ds/2)
         .endFill();
     }
+    break;
+  case "dead":
+    putImage(x, y, "dead", "dead", ds/2, ds/2);
     break;
   case "bless":
     var material = new PIXI.Graphics()
@@ -1341,7 +1439,7 @@ function makeImage(x, y, color, type, alpha, size, board_size){
     break;
   }
   if(material != undefined){
-    if(type=="last"){
+    if(type=="last" || type=="alive" || type=="dead"){
       material.zIndex = 10;
     }
     stage.addChild(material);
@@ -1356,14 +1454,8 @@ function makeImage(x, y, color, type, alpha, size, board_size){
 
 function makeText(x, word, style, type){
   let X, Y;
-  if(window_w > window_h){
-    X = x;
-    Y = info_y[type] * 30;
-  }else{
-    X = margin;
-    Y = x + info_y[type] * 30;
-  }
-  y = info_y[type] * 30;
+  X = x;
+  Y = info_y[type] * 30;
   let textobj = new PIXI.Text(word, style); // テキストオブジェクトの生成
   textobj.position.x = X;  // 表示位置(x)
   textobj.position.y = Y; // 表示位置(y)
@@ -1375,6 +1467,7 @@ function putText(x, y, word, style, type){
   let textobj = new PIXI.Text(word, style); // テキストオブジェクトの生成
   textobj.position.x = x;  // 表示位置(x)
   textobj.position.y = y; // 表示位置(y)
+  textobj.zIndex = 10;
   addTexture(type, textobj);
 }
 
@@ -1393,8 +1486,9 @@ function editText(type, word){
 function makeButton(x, y, name, func){
   let path = "/assets/images/";
   let loader = new PIXI.Loader();
+  let kakuchoushi = ".png";
   loader
-    .add(name, path + name + ".png")
+    .add(name, path + name + kakuchoushi)
     .load((loader, resources)=>{
       let objSprite = new PIXI.Sprite(PIXI.utils.TextureCache[name]);
       objSprite.x = x;
@@ -1402,6 +1496,31 @@ function makeButton(x, y, name, func){
       objSprite.scale.x = 0.4;
       objSprite.scale.y = 0.4;
       objSprite.interactive = true;
+      objSprite.on('pointertap', func);
+      stage.addChild(objSprite);
+      texture["button"].push(objSprite);
+      renderer.render(stage);
+    });
+}
+
+function makeButton2(x, y, height, name, func){
+  let path = "/assets/images/";
+  let loader = new PIXI.Loader();
+  let kakuchoushi = ".png";
+  if(name == "logout"){
+    kakuchoushi = ".png";
+  }
+  loader
+    .add(name, path + name + kakuchoushi)
+    .load((loader, resources)=>{
+      let objSprite = new PIXI.Sprite(PIXI.utils.TextureCache[name]);
+      let scale = height / objSprite.height;
+      objSprite.x = x;
+      objSprite.y = y;
+      objSprite.height *= scale;
+      objSprite.width *= scale;
+      objSprite.interactive = true;
+      objSprite.mipmap = true;
       objSprite.on('pointertap', func);
       stage.addChild(objSprite);
       texture["button"].push(objSprite);
@@ -1498,49 +1617,43 @@ function putStone(e) {
   socket.send("dragon "+(x+100*y));
  }
  
- function makeScorebar(score) {
-   let X, Y;
-   if(window_w > window_h){
-     X = SIDE + margin;
-     Y = 10;
-   }else{
-     X = 0;
-     Y = SIDE + margin;
-   }
-   let w_ter = 0x87ceeb;
-   let b_ter = 0xdc143c;
-   let left = X;
-   let base_len = (GAME_WIDTH - left)/2;
-   let b_len = Math.max(0, base_len+score*10);
-   let w_len = Math.max(0, base_len-score*10);
-   var w_bar = new PIXI.Graphics()
-     .beginFill(w_ter)
-     .drawRect(left+b_len, Y, w_len, 10)
-     .endFill();
-   var b_bar = new PIXI.Graphics()
-     .beginFill(b_ter)
-     .drawRect(left, Y, b_len, 10)
-     .endFill();
-   addTexture("scorebar", w_bar);
-   addTexture("scorebar", b_bar);
-   stage.addChild(w_bar);
-   stage.addChild(b_bar);
- }
+function makeScorebar(score) {
+  let X, Y;
+  X = SIDE + margin;
+  Y = 200;
+  let w_ter = 0x87ceeb;
+  let b_ter = 0xdc143c;
+  let left = X;
+  let r = 100;
+  let base_len = (GAME_WIDTH - left)/2;
+  let b_len = Math.min(Math.PI, Math.max(-1*Math.PI, Math.PI*score/20));
+  let w_len = Math.min(Math.PI, Math.max(-1*Math.PI, Math.PI*-1*score/20));
+  console.log(b_len);
+  console.log(w_len);
+  var w_bar = new PIXI.Graphics()
+    .beginFill(w_ter)
+    .arc(left+r, Y+r, r, 3/2*Math.PI, -3/2*Math.PI-w_len, false)
+    .lineTo(left+r, Y+r)
+    .endFill();
+  var b_bar = new PIXI.Graphics()
+    .beginFill(b_ter)
+    .arc(left+r, Y+r, r, -1/2*Math.PI, 1/2*Math.PI+b_len, false)
+    .lineTo(left+r, Y+r)
+    .endFill();
+  addTexture("scorebar", w_bar);
+  addTexture("scorebar", b_bar);
+  stage.addChild(w_bar);
+  stage.addChild(b_bar);
+}
+
   
 function resize() {
   deleteImage("all");
   window_w = document.documentElement.clientWidth;
   window_h = document.documentElement.clientHeight;
-  if (window_w > window_h){
-    GAME_WIDTH = SIDE+margin*2+220;
-    GAME_HEIGHT = SIDE+margin;
-  }else{
-    GAME_WIDTH = SIDE+margin;
-    GAME_HEIGHT = SIDE+margin*2+240;
-  }
   // Determine which screen dimension is most constrained
-  ratio = Math.min(window.innerWidth/GAME_WIDTH,
-                  window.innerHeight/GAME_HEIGHT);
+  ratio = Math.min(window_w/GAME_WIDTH,
+                  window_h/GAME_HEIGHT);
   console.log("RATIO");
   console.log(window.innerWidth);
   console.log(window.innerHeight);
@@ -1552,8 +1665,10 @@ function resize() {
   stage.scale.x = stage.scale.y = ratio;
 
   // Update the renderer dimensions
-  renderer.resize(Math.ceil(GAME_WIDTH * ratio),
-                  Math.ceil(GAME_HEIGHT * ratio));
+  let resized_w = GAME_WIDTH * ratio;
+  let resized_h = GAME_HEIGHT * ratio;
+  renderer.resize(Math.ceil(resized_w),
+                  Math.ceil(resized_h));
   switch(scene){
     case "home":
       senrigan = false;
@@ -1575,13 +1690,6 @@ function resize() {
 function resize2(){
   window_w = document.documentElement.clientWidth;
   window_h = document.documentElement.clientHeight;
-  if (window_w > window_h){
-    GAME_WIDTH = SIDE+margin*2+220;
-    GAME_HEIGHT = SIDE+margin;
-  }else{
-    GAME_WIDTH = SIDE+margin;
-    GAME_HEIGHT = SIDE+margin*2+240;
-  }
   // Determine which screen dimension is most constrained
   ratio = Math.min(window.innerWidth/GAME_WIDTH,
     window.innerHeight/GAME_HEIGHT);

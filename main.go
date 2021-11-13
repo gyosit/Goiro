@@ -493,8 +493,9 @@ func main() {
 				pass[hash] = 0
 				
 			}
-			board := ex_gnugo.ShowInfluence(hash, turn[hash], room.Size)
+			board, alive_dead := ex_gnugo.ShowInfluence(hash, turn[hash], room.Size)
 			sendClient(m, s, "board:"+board, true, hash_table)
+			sendClient(m, s, "alive_dead:"+alive_dead, true, hash_table)
 			score := ex_gnugo.EstimateScore(hash)
 			sendClient(m, s, "score:"+score, true, hash_table)
 			sendClient(m, s, "player:"+room.Black+","+room.White, true, hash_table)
@@ -517,11 +518,12 @@ func main() {
 				last := ex_gnugo.CheckTurn(hash, room.Size)
 				sendClient(m, s, "turn:"+last, true, hash_table)
 				sendClient(m, s, "player:"+room.Black+","+room.White, true, hash_table)
-				score, board, best := ex_gnugo.Genmove(hash, turn[hash], i, room.Size, level, goiro_level[hash])
+				score, board, best, alive_dead := ex_gnugo.Genmove(hash, turn[hash], i, room.Size, level, goiro_level[hash])
 				c_b, c_w = ex_gnugo.CapturedStone(hash)
 				sendClient(m, s, "board:"+board, true, hash_table)
 				sendClient(m, s, "captured:"+c_b+","+c_w, true, hash_table)
 				sendClient(m, s, "score:"+score, true, hash_table)
+				sendClient(m, s, "alive_dead:"+alive_dead, true, hash_table)
 				last = ex_gnugo.CheckTurn(hash, room.Size)
 				sendClient(m, s, "turn:"+last, true, hash_table)
 				sendClient(m, s, "player:"+room.Black+","+room.White, true, hash_table)
@@ -581,7 +583,7 @@ func main() {
 			pass[hash]++
 			level, _ := strconv.Atoi(parse[1])
 			if pass[hash] < 2{
-				score, board, best := ex_gnugo.Pass(hash, turn[hash], room.Size, level, goiro_level[hash])
+				score, board, best, alive_dead := ex_gnugo.Pass(hash, turn[hash], room.Size, level, goiro_level[hash])
 				if best == "tt"{
 					// End this game by AI
 					sendClient(m, s, "busy", true, hash_table)
@@ -596,6 +598,7 @@ func main() {
 					sendClient(m, s, "board:"+board, true, hash_table)
 					sendClient(m, s, "score:"+score, true, hash_table)
 					sendClient(m, s, "player:"+room.Black+","+room.White, true, hash_table)
+					sendClient(m, s, "alive_dead:"+alive_dead, true, hash_table)
 				}
 			}else{
 				// End this game by the user
@@ -632,8 +635,9 @@ func main() {
 			}else{
 				copySenrigan(hash, user, false)
 				hash = original_hash
-				board := ex_gnugo.ShowInfluence(hash, turn[hash], room.Size)
+				board, alive_dead := ex_gnugo.ShowInfluence(hash, turn[hash], room.Size)
 				sendClient(m, s, "board:"+board, true, hash_table)
+				sendClient(m, s, "alive_dead:"+alive_dead, true, hash_table)
 				score := ex_gnugo.EstimateScore(hash)
 				sendClient(m, s, "score:"+score, true, hash_table)	
 			}
@@ -643,14 +647,16 @@ func main() {
 			var score string
 			if(room.Status == 2){
 				score = room.Winner
-				board := ex_gnugo.ShowInfluence(hash, 1, room.Size)
+				board, alive_dead := ex_gnugo.ShowInfluence(hash, 1, room.Size)
 				sendClient(m, s, "board:"+board, true, hash_table)
+				sendClient(m, s, "alive_dead:"+alive_dead, true, hash_table)
 				sendClient(m, s, "finalscore:"+score, true, hash_table)
 			}else{
 				if turn[hash] == 0{
 					turn[hash] = 1
 				}
-				board := ex_gnugo.ShowInfluence(hash, turn[hash], room.Size)
+				board, alive_dead := ex_gnugo.ShowInfluence(hash, turn[hash], room.Size)
+				sendClient(m, s, "alive_dead:"+alive_dead, true, hash_table)
 				sendClient(m, s, "board:"+board, true, hash_table)
 				score := ex_gnugo.EstimateScore(hash)
 				sendClient(m, s, "score:"+score, true, hash_table)			
@@ -666,7 +672,8 @@ func main() {
 				if count[hash] < 2{
 					score := ex_gnugo.EstimateScore(hash)
 					sendClient(m, s, "score:"+score, true, hash_table)
-					board := ex_gnugo.ShowInfluence(hash, turn[hash], room.Size)
+					board, alive_dead := ex_gnugo.ShowInfluence(hash, turn[hash], room.Size)
+					sendClient(m, s, "alive_dead:"+alive_dead, true, hash_table)
 					sendClient(m, s, "board:"+board, true, hash_table)
 					last := ex_gnugo.CheckTurn(hash, room.Size)
 					sendClient(m, s, "turn:"+last, true, hash_table)
@@ -684,8 +691,9 @@ func main() {
 					if count[hash] < 2{
 						score := ex_gnugo.EstimateScore(hash)
 						sendClient(m, s, "score:"+score, true, hash_table)
-						board := ex_gnugo.ShowInfluence(hash, turn[hash], room.Size)
+						board, alive_dead := ex_gnugo.ShowInfluence(hash, turn[hash], room.Size)
 						sendClient(m, s, "board:"+board, true, hash_table)
+						sendClient(m, s, "alive_dead:"+alive_dead, true, hash_table)
 						last := ex_gnugo.CheckTurn(hash, room.Size)
 						sendClient(m, s, "turn:"+last, true, hash_table)
 					}
@@ -694,8 +702,9 @@ func main() {
 			}
 		case "resume":
 			turn[hash] = resumeKifu(hash)
-			board := ex_gnugo.ShowInfluence(hash, turn[hash], room.Size)
+			board, alive_dead := ex_gnugo.ShowInfluence(hash, turn[hash], room.Size)
 			sendClient(m, s, "board:"+board, true, hash_table)
+			sendClient(m, s, "alive_dead:"+alive_dead, true, hash_table)
 			score := ex_gnugo.EstimateScore(hash)
 			sendClient(m, s, "score:"+score, true, hash_table)
 		case "override":
@@ -704,13 +713,15 @@ func main() {
 		case "head":
 			copyFile(hash, "tmp")
 			turn[hash] = editKifu(hash, -100)
-			board := ex_gnugo.ShowInfluence(hash, turn[hash], room.Size)
+			board, alive_dead := ex_gnugo.ShowInfluence(hash, turn[hash], room.Size)
 			sendClient(m, s, "board:"+board, true, hash_table)
+			sendClient(m, s, "alive_dead:"+alive_dead, true, hash_table)
 			score := ex_gnugo.EstimateScore(hash)
 			sendClient(m, s, "score:"+score, true, hash_table)
 		case "end":
 			showEnd(hash)
-			board := ex_gnugo.ShowInfluence(hash, turn[hash], room.Size)
+			board, alive_dead := ex_gnugo.ShowInfluence(hash, turn[hash], room.Size)
+			sendClient(m, s, "alive_dead:"+alive_dead, true, hash_table)
 			sendClient(m, s, "board:"+board, true, hash_table)
 			score := ex_gnugo.EstimateScore(hash)
 			sendClient(m, s, "score:"+score, true, hash_table)

@@ -72,7 +72,7 @@ func PlayStone(hash string, color int, i int, size int, ai int) (string,string,s
 	}
 }
 
-func Genmove(hash string, color int, i int, size int, ai int, goiro_level int) (string,string,string){
+func Genmove(hash string, color int, i int, size int, ai int, goiro_level int) (string,string,string,string){
 	s_color := map[int]string{1:"black", -1:"white"}
 	cmds := []string{"loadsgf ./assets/kifu/"+hash+".sgf",
 										"level "+strconv.Itoa(ai),
@@ -91,7 +91,8 @@ func Genmove(hash string, color int, i int, size int, ai int, goiro_level int) (
 	best := TransCoordinate(best_i, size, false)
 	uploadKifu(s_color[color*(-1)], best, hash)
 	influence := parseBoard_line(res[2])
-	return score, influence, best
+	alive_dead := parseBoard_line(res[3])
+	return score, influence, best, alive_dead
 }
 
 func FirstPlay(hash string, color int, size int, level int, goiro_level int) string{
@@ -108,7 +109,7 @@ func FirstPlay(hash string, color int, size int, level int, goiro_level int) str
 	return best
 }
 
-func Pass(hash string, color int, size int, level int, goiro_level int) (string, string, string){
+func Pass(hash string, color int, size int, level int, goiro_level int) (string, string, string,string){
 	s_color := map[int]string{1:"black", -1:"white"}
 	uploadKifu(s_color[color], "tt", hash)
 	var score, best, influence string
@@ -128,7 +129,8 @@ func Pass(hash string, color int, size int, level int, goiro_level int) (string,
 	best = TransCoordinate(best_i, size, false)
 	uploadKifu(s_color[color*(-1)], best, hash)
 	influence = parseBoard_line(res[2])
-	return score, influence, best
+	alive_dead := parseBoard_line(res[3])
+	return score, influence, best, alive_dead
 }
 
 func Pass_nonai(hash string, color int){
@@ -219,7 +221,7 @@ func CapturedStone(hash string) (string, string){
 	return black, white
 }
 
-func ShowInfluence(hash string, color int, size int) string{
+func ShowInfluence(hash string, color int, size int) (string,string){
 	var s_color string
 	switch color{
 	case 1:
@@ -233,7 +235,8 @@ func ShowInfluence(hash string, color int, size int) string{
 	res := ExecCommand(cmd)
 	//parsed_board := parseBoard2(res[2:3+size])
 	parsed_board := parseBoard_line(res[0])
-	return parsed_board
+	alive_dead := parseBoard_line(res[1])
+	return parsed_board, alive_dead
 }
 
 func EstimateScore(hash string) string{

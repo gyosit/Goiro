@@ -3783,9 +3783,22 @@ print_goiroinfluence_data(struct influence_data *q, char *what_data)
   for (m = 0; m < board_size; m++) {
     for (n = 0; n < board_size; n++) {
       if (float_pointer)
-	gtp_printf("%6.2f ", float_pointer[POS(m, n)]);
+      	gtp_printf("%6.2f ", float_pointer[POS(m, n)]);
       else
-	gtp_printf("%2d ", int_pointer[POS(m, n)]);
+	      gtp_printf("%2d ", int_pointer[POS(m, n)]);
+    }
+  }
+
+  gtp_printf("\n ");
+
+  for (m = 0; m < board_size; m++) {
+    for (n = 0; n < board_size; n++) {
+      if (dragon[POS(m, n)].status == ALIVE)
+	      gtp_printf("alive ");
+      else if (dragon[POS(m, n)].status == DEAD)
+	      gtp_printf("dead ");
+      else
+	      gtp_printf("unknown ");
     }
   }
   
