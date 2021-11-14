@@ -1048,6 +1048,9 @@ function drawImage(x, y, name, type, height, width, alpha=1){
   objSprite.width = width;
   objSprite.alpha = alpha;
   objSprite.roundPixels = true;
+  if(type == "dead"){
+    objSprite.zIndex = 10;
+  }
   stage.addChild(objSprite);
   addTexture(type, objSprite);
 }
@@ -1313,8 +1316,14 @@ function makeImage(x, y, color, type, alpha, size, board_size){
     break;
   }
   if(material != undefined){
-    if(type=="last" || type=="alive" || type=="dead" || type.indexOf("link") != -1){
+    if(type=="last"){
       material.zIndex = 10;
+    }
+    if(type == "stone"){
+      material.zIndex = 1;
+    }
+    if(type.indexOf("link") != -1){
+      material.zIndex = 2;
     }
     stage.addChild(material);
     texture[type].push(material);
