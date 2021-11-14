@@ -466,7 +466,7 @@ socket.onmessage = function(msg){
   var obj = "";
   let i = 1, x = 0, y = 0;
 
-  console.log(msg);
+  console.log(msg['data'].split(":")[0]);
 
   switch(msg['data'].split(":")[0]){
   case "connected":
@@ -477,6 +477,7 @@ socket.onmessage = function(msg){
     if(scene != "play") return;
     obj = msg['data'].split(":")[1].split(",");
     let size = Math.sqrt(obj.length);
+    console.log("1");
     deleteImage("stone");
     deleteImage("territory");
     deleteImage("link1");
@@ -493,6 +494,7 @@ socket.onmessage = function(msg){
     deleteImage("link12");
     deleteImage("link13");
     deleteImage("link14");
+    console.log("2");
     obj.forEach(v => {
       y = Math.floor(i / size);
       x = i % size - 1;
@@ -507,8 +509,13 @@ socket.onmessage = function(msg){
         var black_t = 0xdc143c;
         var white_t = 0x87ceeb;
       }
+      var black_s = 0x000000;
+      var white_s = 0xffffff;
 
       switch(v){
+        case "-4":
+          makeImage(x, y, black_s, "stone", 1, SIDE, board_size);
+          break;
         case "-3":
           makeImage(x, y, black_t, "territory", 0.7, SIDE, board_size);
           break;
@@ -517,6 +524,9 @@ socket.onmessage = function(msg){
           break;
         case "-1":
           makeImage(x, y, black_t, "territory", 0.1, SIDE, board_size);
+          break;
+        case "4":
+          makeImage(x, y, white_s, "stone", 1, SIDE, board_size);
           break;
         case "3":
           makeImage(x, y, white_t, "territory", 0.7, SIDE, board_size);
@@ -530,151 +540,16 @@ socket.onmessage = function(msg){
         default:
           break;
       }
+      drawLink(obj, v, i, size);
       i++;
     })
-    i = 1;
-    obj.forEach(v => {
-      y = Math.floor(i / size);
-      x = i % size - 1;
-      if(x < 0){
-        x = size-1;
-        y -= 1;
-      }
-      var black_s = 0x000000;
-      var white_s = 0xffffff;
-      switch(v){
-        case "-4":
-          makeImage(x, y, black_s, "stone", 1, SIDE, board_size);
-          break;
-        case "4":
-          makeImage(x, y, white_s, "stone", 1, SIDE, board_size);
-          break;
-        default:
-          break;
-      }
-      i++;
-    })
-    i = 1;
-    obj.forEach(v => {
-      let black_s = 0x000000;
-      let white_s = 0xffffff;
-      let link_color;
-      let skip = false;
-      switch(v){
-        case "-4":
-          link_color = black_s;
-          break;
-        case "4":
-          link_color = white_s;
-          break;
-        default:
-          skip = true;
-          break;
-      }
-      if(!skip){
-        y = Math.floor(i / size);
-        x = i % size - 1;
-        if(x < 0){
-          x = size-1;
-          y -= 1;
-        }
-        //配置条件式
-        //縦方向の直列
-        vertical_line = obj[i-1] == obj[i+size-1];
-        //横方向の直列
-        horizontal_line = obj[i-1] == obj[i] && i % size != 0;
-        //横方向(左)の直列
-        left_line = obj[i-1] == obj[i-2];
-        //右下コスミ・ハネ
-        bottom_right = obj[i-1] == obj[i+size] && !(obj[i] == obj[i-1]*-1 && obj[i-1+size] == obj[i-1]*-1) && i % size != 0;
-        //左下コスミ・ハネ
-        bottom_left = obj[i-1] == obj[i+size-2] && !(obj[i-2] == obj[i-1]*-1 && obj[i-1+size] == obj[i-1]*-1) && i % size != 1;
-        //右上コスミ・ハネ
-        up_right = obj[i-1] == obj[i-size] && !(obj[i] == obj[i-1]*-1 && obj[i-1-size] == obj[i-1]*-1) && i % size != 0;
-        //縦一間トビ
-        vertical_one = obj[i-1] == obj[i+2*size-1] && Math.abs(obj[i+size-1]) != 4;
-        //横一間トビ
-        horizontal_one = obj[i-1] == obj[i+1] && Math.abs(obj[i]) != 4 && (i-1) % size < (size-2);
-        //縦二間トビ
-        vertical_two = obj[i-1] == obj[i+3*size-1] && Math.abs(obj[i+size-1]) != 4 && Math.abs(obj[i+2*size-1]) != 4;
-        //横二間トビ
-        horizontal_two = obj[i-1] == obj[i+2] && Math.abs(obj[i]) != 4 && Math.abs(obj[i+1]) != 4 && (i-1) % size < (size-3);
-        //縦三間トビ
-        vertical_three = obj[i-1] == obj[i+4*size-1] && Math.abs(obj[i+size-1]) != 4 && Math.abs(obj[i+2*size-1]) != 4 && Math.abs(obj[i+3*size-1]) != 4;
-        //横三間トビ
-        horizontal_three = obj[i-1] == obj[i+3] && Math.abs(obj[i]) != 4 && Math.abs(obj[i+1]) != 4 && Math.abs(obj[i+2]) != 4 && (i-1) % size < (size-4);
-        //ケイマ (4時)
-        keima_four = obj[i-1] == obj[i+1+size] && obj[i] != obj[i-1]*-1 && obj[i+size] != obj[i-1]*-1 && (i-1) % size < (size-2);
-        //ケイマ (5時)
-        keima_five = obj[i-1] == obj[i+2*size] && obj[i-1+size] != obj[i-1]*-1 && obj[i+size] != obj[i-1]*-1 && i % size != 0;
-        //ケイマ (7時)
-        keima_seven = obj[i-1] == obj[i-2+2*size] && obj[i-1+size] != obj[i-1]*-1 && obj[i-2+size] != obj[i-1]*-1 && i % size != 1;
-        //ケイマ (8時)
-        keima_eight = obj[i-1] == obj[i-3+size] && obj[i-2] != obj[i-1]*-1 && obj[i-2+size] != obj[i-1]*-1 && i % size != 1 && i % size != 2;
-
-        if(vertical_line){
-          //縦方向の直列
-          makeImage(x, y, link_color, "link1", 1, SIDE, board_size);
-        }
-        if(horizontal_line){
-          //横方向の直列
-          makeImage(x, y, link_color, "link2", 1, SIDE, board_size);
-        }
-        if(bottom_right && !(horizontal_line || vertical_line)){
-          //右下コスミ・ハネ
-          makeImage(x, y, link_color, "link3", 1, SIDE, board_size);
-        }
-        if(bottom_left && !(left_line || vertical_line)){
-          //左下コスミ・ハネ
-          makeImage(x, y, link_color, "link4", 1, SIDE, board_size);
-        }
-        if(vertical_one && !(bottom_right || bottom_left)){
-          //縦一間トビ
-          makeImage(x, y, link_color, "link5", 1, SIDE, board_size);
-        }
-        if(horizontal_one && !(bottom_right || up_right)){
-          //横一間トビ
-          makeImage(x, y, link_color, "link6", 1, SIDE, board_size);
-        }
-        if(vertical_two){
-          //縦二間トビ
-          makeImage(x, y, link_color, "link7", 1, SIDE, board_size);
-        }
-        if(horizontal_two){
-          //横ニ間トビ
-          makeImage(x, y, link_color, "link8", 1, SIDE, board_size);
-        }
-        if(vertical_three){
-          //縦三間トビ
-          makeImage(x, y, link_color, "link9", 1, SIDE, board_size);
-        }
-        if(horizontal_three){
-          //横三間トビ
-          makeImage(x, y, link_color, "link10", 1, SIDE, board_size);
-        }
-        if(keima_four && !vertical_line && !horizontal_line && !bottom_right){
-          //ケイマ (4時)
-          makeImage(x, y, link_color, "link11", 1, SIDE, board_size);
-        }
-        if(keima_five && !vertical_line && !horizontal_line && !bottom_right && !vertical_one){
-          //ケイマ (5時)
-          makeImage(x, y, link_color, "link12", 1, SIDE, board_size);
-        }
-        if(keima_seven && !vertical_line && !left_line && !bottom_left && !vertical_one){
-          //ケイマ (7時)
-          makeImage(x, y, link_color, "link13", 1, SIDE, board_size);
-        }
-        if(keima_eight && !vertical_line && !left_line && !bottom_left){
-          //ケイマ (8時)
-          makeImage(x, y, link_color, "link14", 1, SIDE, board_size);
-        }
-      }
-      i++;
-    })
+    console.log("3");
     deletelinks();
+    console.log("3.1");
     deleteImage("message");
-    console.log()
+    console.log("3.2");
     visibleLink(link_visible);
+    console.log("4");
     break;
   }case "alive_dead":{
     deleteImage("dead");
@@ -726,7 +601,6 @@ socket.onmessage = function(msg){
   }case "score":{
     if(scene != "play") return;
     obj = msg['data'].split(":")[1].split(" ")[0].split("+");
-    let size = Math.sqrt(obj.length);
     deleteImage("score");
     makeText(SIDE+margin, msg['data'].split(":")[1].split(" ")[0], font_style, "score");
     obj[1] = parseFloat(obj[1]);
@@ -860,7 +734,7 @@ socket.onmessage = function(msg){
 }
 
 //resize();
-window.addEventListener('load', resize);
+window.addEventListener('load', resize, {loop: true});
 window.addEventListener("resize", resize2);
 
 
@@ -1439,7 +1313,7 @@ function makeImage(x, y, color, type, alpha, size, board_size){
     break;
   }
   if(material != undefined){
-    if(type=="last" || type=="alive" || type=="dead"){
+    if(type=="last" || type=="alive" || type=="dead" || type.indexOf("link") != -1){
       material.zIndex = 10;
     }
     stage.addChild(material);
@@ -1449,6 +1323,122 @@ function makeImage(x, y, color, type, alpha, size, board_size){
     links.push([x1, x2, y1, y2, type, texture[type].length-1]);
     console.log(texture[type]);
     console.log("links:", links);
+  }
+}
+
+function drawLink(obj, color, i, size){
+  let black_s = 0x000000;
+  let white_s = 0xffffff;
+  let link_color;
+  let skip = false;
+  switch(color){
+    case "-4":
+      link_color = black_s;
+      break;
+    case "4":
+      link_color = white_s;
+      break;
+    default:
+      skip = true;
+      break;
+  }
+  if(!skip){
+    y = Math.floor(i / size);
+    x = i % size - 1;
+    if(x < 0){
+      x = size-1;
+      y -= 1;
+    }
+    //配置条件式
+    //縦方向の直列
+    vertical_line = obj[i-1] == obj[i+size-1];
+    //横方向の直列
+    horizontal_line = obj[i-1] == obj[i] && i % size != 0;
+    //横方向(左)の直列
+    left_line = obj[i-1] == obj[i-2];
+    //右下コスミ・ハネ
+    bottom_right = obj[i-1] == obj[i+size] && !(obj[i] == obj[i-1]*-1 && obj[i-1+size] == obj[i-1]*-1) && i % size != 0;
+    //左下コスミ・ハネ
+    bottom_left = obj[i-1] == obj[i+size-2] && !(obj[i-2] == obj[i-1]*-1 && obj[i-1+size] == obj[i-1]*-1) && i % size != 1;
+    //右上コスミ・ハネ
+    up_right = obj[i-1] == obj[i-size] && !(obj[i] == obj[i-1]*-1 && obj[i-1-size] == obj[i-1]*-1) && i % size != 0;
+    //縦一間トビ
+    vertical_one = obj[i-1] == obj[i+2*size-1] && Math.abs(obj[i+size-1]) != 4;
+    //横一間トビ
+    horizontal_one = obj[i-1] == obj[i+1] && Math.abs(obj[i]) != 4 && (i-1) % size < (size-2);
+    //縦二間トビ
+    vertical_two = obj[i-1] == obj[i+3*size-1] && Math.abs(obj[i+size-1]) != 4 && Math.abs(obj[i+2*size-1]) != 4;
+    //横二間トビ
+    horizontal_two = obj[i-1] == obj[i+2] && Math.abs(obj[i]) != 4 && Math.abs(obj[i+1]) != 4 && (i-1) % size < (size-3);
+    //縦三間トビ
+    vertical_three = obj[i-1] == obj[i+4*size-1] && Math.abs(obj[i+size-1]) != 4 && Math.abs(obj[i+2*size-1]) != 4 && Math.abs(obj[i+3*size-1]) != 4;
+    //横三間トビ
+    horizontal_three = obj[i-1] == obj[i+3] && Math.abs(obj[i]) != 4 && Math.abs(obj[i+1]) != 4 && Math.abs(obj[i+2]) != 4 && (i-1) % size < (size-4);
+    //ケイマ (4時)
+    keima_four = obj[i-1] == obj[i+1+size] && obj[i] != obj[i-1]*-1 && obj[i+size] != obj[i-1]*-1 && (i-1) % size < (size-2);
+    //ケイマ (5時)
+    keima_five = obj[i-1] == obj[i+2*size] && obj[i-1+size] != obj[i-1]*-1 && obj[i+size] != obj[i-1]*-1 && i % size != 0;
+    //ケイマ (7時)
+    keima_seven = obj[i-1] == obj[i-2+2*size] && obj[i-1+size] != obj[i-1]*-1 && obj[i-2+size] != obj[i-1]*-1 && i % size != 1;
+    //ケイマ (8時)
+    keima_eight = obj[i-1] == obj[i-3+size] && obj[i-2] != obj[i-1]*-1 && obj[i-2+size] != obj[i-1]*-1 && i % size != 1 && i % size != 2;
+
+    if(vertical_line){
+      //縦方向の直列
+      makeImage(x, y, link_color, "link1", 1, SIDE, board_size);
+    }
+    if(horizontal_line){
+      //横方向の直列
+      makeImage(x, y, link_color, "link2", 1, SIDE, board_size);
+    }
+    if(bottom_right && !(horizontal_line || vertical_line)){
+      //右下コスミ・ハネ
+      makeImage(x, y, link_color, "link3", 1, SIDE, board_size);
+    }
+    if(bottom_left && !(left_line || vertical_line)){
+      //左下コスミ・ハネ
+      makeImage(x, y, link_color, "link4", 1, SIDE, board_size);
+    }
+    if(vertical_one && !(bottom_right || bottom_left)){
+      //縦一間トビ
+      makeImage(x, y, link_color, "link5", 1, SIDE, board_size);
+    }
+    if(horizontal_one && !(bottom_right || up_right)){
+      //横一間トビ
+      makeImage(x, y, link_color, "link6", 1, SIDE, board_size);
+    }
+    if(vertical_two){
+      //縦二間トビ
+      makeImage(x, y, link_color, "link7", 1, SIDE, board_size);
+    }
+    if(horizontal_two){
+      //横ニ間トビ
+      makeImage(x, y, link_color, "link8", 1, SIDE, board_size);
+    }
+    if(vertical_three){
+      //縦三間トビ
+      makeImage(x, y, link_color, "link9", 1, SIDE, board_size);
+    }
+    if(horizontal_three){
+      //横三間トビ
+      makeImage(x, y, link_color, "link10", 1, SIDE, board_size);
+    }
+    if(keima_four && !vertical_line && !horizontal_line && !bottom_right){
+      //ケイマ (4時)
+      makeImage(x, y, link_color, "link11", 1, SIDE, board_size);
+    }
+    if(keima_five && !vertical_line && !horizontal_line && !bottom_right && !vertical_one){
+      //ケイマ (5時)
+      makeImage(x, y, link_color, "link12", 1, SIDE, board_size);
+    }
+    if(keima_seven && !vertical_line && !left_line && !bottom_left && !vertical_one){
+      //ケイマ (7時)
+      makeImage(x, y, link_color, "link13", 1, SIDE, board_size);
+    }
+    if(keima_eight && !vertical_line && !left_line && !bottom_left){
+      //ケイマ (8時)
+      makeImage(x, y, link_color, "link14", 1, SIDE, board_size);
+    }
   }
 }
 
@@ -1647,7 +1637,7 @@ function makeScorebar(score) {
 }
 
   
-function resize() {
+function resize(loop=false) {
   deleteImage("all");
   window_w = document.documentElement.clientWidth;
   window_h = document.documentElement.clientHeight;
@@ -1660,6 +1650,11 @@ function resize() {
   console.log(GAME_WIDTH);
   console.log(GAME_HEIGHT);
   console.log(ratio);
+  if(ratio < 0.3){
+    ratio = Math.max(window_w/GAME_WIDTH,
+      window_h/GAME_HEIGHT);
+    console.log(ratio);
+  }
 
   // Scale the view stageropriately to fill that dimension
   stage.scale.x = stage.scale.y = ratio;
@@ -1685,6 +1680,13 @@ function resize() {
       break;
   }
   renderer.render(stage);
+  const _sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  (async () => {
+    await _sleep(500);
+    if(loop){
+      resize();
+    }
+  })()
 }
 
 function resize2(){
@@ -1699,6 +1701,12 @@ function resize2(){
   console.log(GAME_WIDTH);
   console.log(GAME_HEIGHT);
   console.log(ratio);
+  if(ratio < 0.3){
+    ratio = Math.max(window_w/GAME_WIDTH,
+      window_h/GAME_HEIGHT);
+      console.log(ratio);
+  }
+
 
   // Scale the view stageropriately to fill that dimension
   console.log(texture);
@@ -1709,7 +1717,11 @@ function resize2(){
                   Math.ceil(GAME_HEIGHT * ratio));
   switch(scene){
     case "home":
-      inithome();
+      senrigan = false;
+      if(username != "")
+        inithome();
+      else
+        initLogin();
       break;
     case "play":
       initGoban(board_size);
