@@ -282,7 +282,6 @@ func main() {
 		if strings.Index(username, "GUEST") != -1{
 			// ゲストアカウント
 			ctx.HTML(http.StatusBadRequest, "regist.html", gin.H{"err": "既にそのユーザーが存在します。"})
-			fmt.Println(err)
 		}
 		if err := ctx.Bind(&form); err == nil{
 			if err := createUser(username, pass); err != nil{
