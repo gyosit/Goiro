@@ -107,6 +107,8 @@ func main() {
 
 	router.LoadHTMLGlob("views/*.html")
 	router.Static("/assets", "./assets")
+	router.Static("/TemplateData", "./views/TemplateData")
+	router.Static("/Build", "./views/Build")
 
 	router.GET("/", func(ctx *gin.Context){
 		username := SessionManager.GetUser(ctx)
