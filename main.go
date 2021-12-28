@@ -265,6 +265,10 @@ func main() {
 		ctx.HTML(200, "message.html", gin.H{})
 	})
 
+	router.GET("/unity", func(ctx *gin.Context){
+		ctx.HTML(200, "unity.html", gin.H{})
+	})
+
 	router.GET("/thumbnail/:name", func(ctx *gin.Context){
 		name := ctx.Param("name")
 		ctx.File("./assets/thumbnail/" + name)
