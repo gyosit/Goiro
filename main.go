@@ -279,6 +279,11 @@ func main() {
 		var form User
 		username := ctx.PostForm("username")
 		pass := ctx.PostForm("pass")
+		if strings.Index(username, "GUEST") != -1{
+			// ゲストアカウント
+			ctx.HTML(http.StatusBadRequest, "regist.html", gin.H{"err": "既にそのユーザーが存在します。"})
+			fmt.Println(err)
+		}
 		if err := ctx.Bind(&form); err == nil{
 			if err := createUser(username, pass); err != nil{
 				fmt.Printf("Already user\n")

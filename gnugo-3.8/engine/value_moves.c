@@ -3682,47 +3682,61 @@ find_best_move(int *the_move, float *value, int color,
   int best_move = NO_MOVE;
   int pos;
   int threshold = 0;
+  if(get_goiro_level()<0){
+    best_value = 100.0;
+  }
 
   memset(blunder_tested, 0, sizeof(blunder_tested));
 
   while (!good_move_found) {
-    best_value = 0;
+    best_value = (get_goiro_level()<0)?100.0:0;
     best_move = NO_MOVE;
+    gprintf("Initial best value is %f\n", best_value);
 
     /* Search through all board positions for the highest valued move. */
     for (pos = BOARDMIN; pos < BOARDMAX; pos++) {
       float this_value = move[pos].final_value;
+      // gprintf("This value is %f in %d\n", this_value, pos);
+      // gprintf("Best value is %f\n", best_value);
+      // gprintf("Best move is %d\n", best_move);
       if (allowed_moves && !allowed_moves[pos])
-	continue;
+	      continue;
       if (!ON_BOARD(pos) || move[pos].final_value == 0.0)
-	continue;
+      	continue;
 
-  if(get_goiro_level()<0){
-    threshold = best_move == NO_MOVE || this_value < best_value && this_value > 0;
-  }else{
-    threshold = this_value > best_value;
-  }
-	
-  if (threshold) {
-    if (is_legal(pos, color) || is_illegal_ko_capture(pos, color)) {
-      best_value = this_value;
-      best_move = pos;
-    }
-	else {
-	  TRACE("Move at %1m would be suicide.\n", pos);
-	  remove_top_move(pos);
-	  move[pos].value = 0.0;
-	  move[pos].final_value = 0.0;
-	}
+      if(get_goiro_level()<0){
+        threshold = this_value < best_value;
+      }else{
+        threshold = this_value > best_value;
       }
+      //gprintf("This value is (2) %f in %d\n", this_value, pos);
+        
+      if (threshold) {
+        if (is_legal(pos, color) || is_illegal_ko_capture(pos, color)) {
+          //gprintf("Best value is %f\n", best_value);
+          if(this_value < 0) continue;
+          best_value = this_value;
+          best_move = pos;
+          //gprintf("Best value is %f dayo\n", best_value);
+        }else {
+          TRACE("Move at %1m would be suicide.\n", pos);
+          remove_top_move(pos);
+          move[pos].value = 0.0;
+          move[pos].final_value = 0.0;
+        }
+      }
+    }
+
+    if(get_goiro_level()<0 && best_move == 0){
+      best_value = 0.0;
     }
     
     /* If the best move is an illegal ko capture, reevaluate ko
      * threats and search again.
      */
     if (best_value > 0.0
-	&& (is_illegal_ko_capture(best_move, color)
-	    || !is_allowed_move(best_move, color))) {
+      && (is_illegal_ko_capture(best_move, color)
+      || !is_allowed_move(best_move, color))) {
       TRACE("Move at %1m would be an illegal ko capture.\n", best_move);
       reevaluate_ko_threats(best_move, color, best_value);
       redistribute_points();
