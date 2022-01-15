@@ -62,6 +62,8 @@ let times = 0;
 var review_times = 0;
 var review_index = 0;
 
+var emerg_msg = "";
+
 var pass_f = function() {
   console.log(mode);
   if(mode != "free")
@@ -449,7 +451,8 @@ var b_events = {"pass": pass_f,
                 "vscom": vscom_f,
                 "vsfree": vsfree_f, };
 var font_style = {font:'Arial', fill:'black'};
-var font_style_home = {font:'Arial', fill:'black', fontSize: 40};
+var font_style_home = {font:'Arial', fill:'black', fontSize: 30};
+var font_style_msg = {font:'Arial', fill:'red', fontSize: 30};
 
 var url = "wss://" + window.location.host + ":1780" + "/connect/" + username+ "/ws";
 //var url = "ws://" + window.location.host + "/connect/" + username+ "/ws";
@@ -466,8 +469,6 @@ socket.onmessage = function(msg){
   var obj = "";
   let i = 1, x = 0, y = 0;
 
-  console.log(msg['data'].split(":")[0]);
-
   switch(msg['data'].split(":")[0]){
   case "connected":
     console.log("Connected by web");
@@ -477,7 +478,6 @@ socket.onmessage = function(msg){
     if(scene != "play") return;
     obj = msg['data'].split(":")[1].split(",");
     let size = Math.sqrt(obj.length);
-    console.log("1");
     deleteImage("stone");
     deleteImage("territory");
     deleteImage("link1");
@@ -494,7 +494,6 @@ socket.onmessage = function(msg){
     deleteImage("link12");
     deleteImage("link13");
     deleteImage("link14");
-    console.log("2");
     obj.forEach(v => {
       y = Math.floor(i / size);
       x = i % size - 1;
@@ -543,13 +542,9 @@ socket.onmessage = function(msg){
       drawLink(obj, v, i, size);
       i++;
     })
-    console.log("3");
     deletelinks();
-    console.log("3.1");
     deleteImage("message");
-    console.log("3.2");
     visibleLink(link_visible);
-    console.log("4");
     break;
   }case "alive_dead":{
     deleteImage("dead");
@@ -557,7 +552,6 @@ socket.onmessage = function(msg){
     obj = msg['data'].split(":")[1].split(",");
     let size = Math.sqrt(obj.length);
     let i = 1;
-    console.log(obj);
     obj.forEach(v => {
       y = Math.floor(i / size);
       x = i % size - 1;
@@ -575,7 +569,6 @@ socket.onmessage = function(msg){
       }
       i++;
     })
-    console.log(texture["alive_dead"]);
     break;
   }case "pass":{
     if(scene != "play") return;
@@ -622,7 +615,6 @@ socket.onmessage = function(msg){
       resize();
     });
     makeButton2(SIDE+margin+100, info_y["button"]*90+250, 78, "tweet", function(){
-      console.log("tweet");
       renderer.render(stage);
       let c = renderer.view.toDataURL("image/png", 1);
       let now_date = new Date();
@@ -720,10 +712,8 @@ socket.onmessage = function(msg){
       });
       putText(110, review_times_*210+50, `${size}路盤/コミ${komi}目/ハンデ${hande}子\n●${black}/○${white}\n${winner}`, font_style_home);
       renderer.render(stage);
-      console.log("complete!");
     }
       //putText(100, review_times*200, "${size}路盤/コミ${komi}目/ハンデ${hande}子\n●${black}/○${white}");
-      console.log(stage);
       break;
     }case "review_ind":{
       objs = msg['data'].split(":")[1];
@@ -808,7 +798,6 @@ function initGoban(size){
     board_color = 0x2e2930;
     line_color = 0x8d6449;
   }else{
-    console.log(stone_state);
     if(stone_state == 2){
       board_color = 0x807b6c;
       line_color = 0x006400;
@@ -868,7 +857,6 @@ function initGoban(size){
 
   let back = new PIXI.Graphics();
   back.beginFill(board_color);
-  console.log(GAME_HEIGHT);
   back.drawRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
   back.endFill();
   stage.addChildAt(back, 0);
@@ -940,15 +928,16 @@ function inithome(){
     username = "";
     window.location.href = 'logout';
   });
-  putText(0, graphic_setting["top_margin"]+graphic_setting["menu_btn_h"]+graphic_setting["middle_margin"]*4+graphic_setting["buttle_btn_h"]*3, 
-`本サイトはまだ試作段階です。
+  putText(0, graphic_setting["top_margin"]+graphic_setting["menu_btn_h"]+graphic_setting["middle_margin"]*4+graphic_setting["buttle_btn_h"]*3-10, 
+    emerg_msg, font_style_msg, "text")
+  putText(0, graphic_setting["top_margin"]+graphic_setting["menu_btn_h"]+graphic_setting["middle_margin"]*4+graphic_setting["buttle_btn_h"]*3+20, 
+    `本サイトはまだ試作段階です。
 サーバーダウンやセキュリティ問題等に責任を負えません。
 不具合・要望は作者に連絡いただけると幸いです。`, font_style_home, "text")
   makeButton2(0, graphic_setting["top_margin"]+graphic_setting["menu_btn_h"]+graphic_setting["middle_margin"], 120, "vshuman", vshuman_f);
   makeButton2(0, graphic_setting["top_margin"]+graphic_setting["menu_btn_h"]+graphic_setting["middle_margin"]*2+graphic_setting["buttle_btn_h"], graphic_setting["menu_btn_h"], "vscom", vscom_f);
   makeButton2(0, graphic_setting["top_margin"]+graphic_setting["menu_btn_h"]+graphic_setting["middle_margin"]*3+graphic_setting["buttle_btn_h"]*2, graphic_setting["menu_btn_h"], "vsfree", vsfree_f);
   
-  console.log(stage);
   renderer.render(stage);
 }
 
@@ -968,10 +957,12 @@ function initLogin(){
   makeButton2(0, 250, 100, "login", function(){
     window.location.href = 'login';
   });
-  putText(0, 500, 
+  putText(0, graphic_setting["top_margin"]+graphic_setting["menu_btn_h"]+graphic_setting["middle_margin"]*4+graphic_setting["buttle_btn_h"]*3-10, 
+  emerg_msg, font_style_msg, "text")
+  putText(0, graphic_setting["top_margin"]+graphic_setting["menu_btn_h"]+graphic_setting["middle_margin"]*4+graphic_setting["buttle_btn_h"]*3+20, 
     `本サイトはまだ試作段階です。
 サーバーダウンやセキュリティ問題等に責任を負えません。
-不具合・要望は作者に連絡いただけると幸いです。`, font_style, "text")
+不具合・要望は作者に連絡いただけると幸いです。`, font_style_home, "text")
 }
 
 function initReview(){
@@ -989,13 +980,11 @@ function initReview(){
   makeButton2(10, 100, 200, "uparrow", function(){
     review_times = 0;
     review_index = Math.max(review_index-4, 0);
-    console.log(review_index);
     resize();
   });
   makeButton2(10, 400, 200 ,"downarrow", function(){
     review_times = 0;
     review_index += 4;
-    console.log(review_index);
     resize();
   });
   socket.send(`review ${review_index}`);
@@ -1323,6 +1312,9 @@ function makeImage(x, y, color, type, alpha, size, board_size){
       material.zIndex = 1;
     }
     if(type.indexOf("link") != -1){
+      material.zIndex = 0.5;
+    }
+    if(type == "link1" || type == "link2"){
       material.zIndex = 2;
     }
     stage.addChild(material);
@@ -1330,22 +1322,22 @@ function makeImage(x, y, color, type, alpha, size, board_size){
   }
   if(type.indexOf("link") != -1 && type != "link1" && type != "link2" && type != "link3" && type != "link4"){
     links.push([x1, x2, y1, y2, type, texture[type].length-1]);
-    console.log(texture[type]);
-    console.log("links:", links);
   }
 }
 
 function drawLink(obj, color, i, size){
   let black_s = 0x000000;
   let white_s = 0xffffff;
-  let link_color;
+  let link_color, main_link_color;
   let skip = false;
   switch(color){
     case "-4":
-      link_color = black_s;
+      main_link_color = black_s;
+      link_color = 0xff0000;
       break;
     case "4":
-      link_color = white_s;
+      main_link_color = white_s;
+      link_color = 0x00ffff;
       break;
     default:
       skip = true;
@@ -1394,11 +1386,11 @@ function drawLink(obj, color, i, size){
 
     if(vertical_line){
       //縦方向の直列
-      makeImage(x, y, link_color, "link1", 1, SIDE, board_size);
+      makeImage(x, y, main_link_color, "link1", 1, SIDE, board_size);
     }
     if(horizontal_line){
       //横方向の直列
-      makeImage(x, y, link_color, "link2", 1, SIDE, board_size);
+      makeImage(x, y, main_link_color, "link2", 1, SIDE, board_size);
     }
     if(bottom_right && !(horizontal_line || vertical_line)){
       //右下コスミ・ハネ
@@ -1555,7 +1547,6 @@ function visibleImage(type, sw){
   }else{
     texture[type].forEach(v => {
       v.visible = sw;
-      console.log(v);
     })
   }
   renderer.render(stage);
@@ -1591,10 +1582,8 @@ function deletelinks(){
   let over = false;
   let i = 0;
   links.forEach(v1 => {
-    console.log("v2:", links.slice(i+1));
     links.slice(i+1).forEach(v2 => {
       over = overLink(v1, v2);
-      console.log("over:", over);
       if(over){
         texture[v1[4]][v1[5]].visible = false;
         texture[v2[4]][v2[5]].visible = false;
@@ -1627,8 +1616,6 @@ function makeScorebar(score) {
   let base_len = (GAME_WIDTH - left)/2;
   let b_len = Math.min(Math.PI, Math.max(-1*Math.PI, Math.PI*score/20));
   let w_len = Math.min(Math.PI, Math.max(-1*Math.PI, Math.PI*-1*score/20));
-  console.log(b_len);
-  console.log(w_len);
   var w_bar = new PIXI.Graphics()
     .beginFill(w_ter)
     .arc(left+r, Y+r, r, 3/2*Math.PI, -3/2*Math.PI-w_len, false)
@@ -1653,7 +1640,6 @@ function resize(loop=false) {
   // Determine which screen dimension is most constrained
   ratio = Math.min(window_w/GAME_WIDTH,
                   window_h/GAME_HEIGHT);
-  console.log("RATIO");
   console.log(window.innerWidth);
   console.log(window.innerHeight);
   console.log(GAME_WIDTH);
@@ -1662,7 +1648,6 @@ function resize(loop=false) {
   if(ratio < 0.3){
     ratio = Math.max(window_w/GAME_WIDTH,
       window_h/GAME_HEIGHT);
-    console.log(ratio);
   }
 
   // Scale the view stageropriately to fill that dimension
@@ -1704,7 +1689,6 @@ function resize2(){
   // Determine which screen dimension is most constrained
   ratio = Math.min(window.innerWidth/GAME_WIDTH,
     window.innerHeight/GAME_HEIGHT);
-  console.log("RATIO");
   console.log(window.innerWidth);
   console.log(window.innerHeight);
   console.log(GAME_WIDTH);
@@ -1713,12 +1697,10 @@ function resize2(){
   if(ratio < 0.3){
     ratio = Math.max(window_w/GAME_WIDTH,
       window_h/GAME_HEIGHT);
-      console.log(ratio);
   }
 
 
   // Scale the view stageropriately to fill that dimension
-  console.log(texture);
   stage.scale.x = stage.scale.y = ratio;
 
   // Update the renderer dimensions

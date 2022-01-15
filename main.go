@@ -440,13 +440,14 @@ func main() {
 		fmt.Printf("DISCONNECT\n")
 		user := strings.Split(s.Request.URL.Path, "/")[2]
 		hash := hash_table[user]
+		hash_table[user] = ""
+		fmt.Println(hash)
 		if(hash != ""){
 			enters[hash] -= 1
 			room := getRoom(hash)
 			fmt.Println(room)
 			if room.Status < 2 && enters[hash] < 1{
 				deleteRoom(room.Hash) //検討画面の戻る→進む応急バグ対応　今後画面遷移をしない形で修正
-				fmt.Printf("deleted\n")
 			}
 		}
 	})
@@ -503,12 +504,14 @@ func main() {
 				pass[hash] = 0
 				
 			}
-			board, alive_dead := ex_gnugo.ShowInfluence(hash, turn[hash], room.Size)
+			board := ex_gnugo.ShowBoard(hash)
 			sendClient(m, s, "board:"+board, true, hash_table)
-			sendClient(m, s, "alive_dead:"+alive_dead, true, hash_table)
 			score := ex_gnugo.EstimateScore(hash)
 			sendClient(m, s, "score:"+score, true, hash_table)
 			sendClient(m, s, "player:"+room.Black+","+room.White, true, hash_table)
+			board, alive_dead := ex_gnugo.ShowInfluence(hash, turn[hash], room.Size)
+			sendClient(m, s, "board:"+board, true, hash_table)
+			sendClient(m, s, "alive_dead:"+alive_dead, true, hash_table)
 			if _, err := os.Stat(head+hash+"tmp"+tail); err == nil{
 				copyFile(hash, "tmptmp")
 			}
@@ -820,6 +823,8 @@ func main() {
 			old_room.Size = original.Size
 			old_room.Hande = original.Hande
 			old_room.Komi = original.Komi
+			old_room.Black = original.Black
+			old_room.White = original.White
 			if new_hash, err := createRoom(old_room); err != nil{
 				fmt.Println(err)
 			}else{
@@ -943,8 +948,10 @@ func deleteRoom(hash string){
 	db := gormConnect()
 	var room Play
 	db.First(&room, "hash = ?", hash)
+	if room.ID == 0{ return }
 	db.Unscoped().Delete(&room)
 	db.Close()
+	fmt.Printf("deleted\n")
 }
 
 func endGame(hash , score string){
