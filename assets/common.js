@@ -403,6 +403,7 @@ var texture = {"board": [],
               "board_line": [],
               "stone": [],
               "dead": [],
+              "critical": [],
               "territory": [],
               "bless": [],
               "last": [],
@@ -454,8 +455,8 @@ var font_style = {font:'Arial', fill:'black'};
 var font_style_home = {font:'Arial', fill:'black', fontSize: 30};
 var font_style_msg = {font:'Arial', fill:'red', fontSize: 30};
 
-var url = "wss://" + window.location.host + ":1780" + "/connect/" + username+ "/ws";
-//var url = "ws://" + window.location.host + "/connect/" + username+ "/ws";
+// var url = "wss://" + window.location.host + ":1780" + "/connect/" + username+ "/ws";
+var url = "ws://" + window.location.host + "/connect/" + username+ "/ws";
 var socket = new WebSocket(url);
 var xhr = new XMLHttpRequest();
 
@@ -548,6 +549,7 @@ socket.onmessage = function(msg){
     break;
   }case "alive_dead":{
     deleteImage("dead");
+    deleteImage("critical");
     if(scene != "play") return;
     obj = msg['data'].split(":")[1].split(",");
     let size = Math.sqrt(obj.length);
@@ -564,6 +566,9 @@ socket.onmessage = function(msg){
         case "dead":
           makeImage(x, y, mark_color, "dead", 1, SIDE, board_size);
           break;
+        case "critical":
+            makeImage(x, y, mark_color, "critical", 1, SIDE, board_size);
+            break;
         default:
           break;
       }
@@ -1037,7 +1042,7 @@ function drawImage(x, y, name, type, height, width, alpha=1){
   objSprite.width = width;
   objSprite.alpha = alpha;
   objSprite.roundPixels = true;
-  if(type == "dead"){
+  if(type == "dead" || type == "critical"){
     objSprite.zIndex = 10;
   }
   stage.addChild(objSprite);
@@ -1101,6 +1106,9 @@ function makeImage(x, y, color, type, alpha, size, board_size){
   case "dead":
     putImage(x, y, "dead", "dead", ds/2, ds/2);
     break;
+  case "critical":
+      putImage(x, y, "critical", "critical", ds/2, ds/2);
+      break;
   case "bless":
     var material = new PIXI.Graphics()
       .beginFill(color, alpha)

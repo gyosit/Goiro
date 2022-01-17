@@ -3791,14 +3791,68 @@ print_goiroinfluence_data(struct influence_data *q, char *what_data)
 
   gtp_printf("\n ");
 
+  // safety
   for (m = 0; m < board_size; m++) {
     for (n = 0; n < board_size; n++) {
-      if (dragon[POS(m, n)].status == ALIVE)
-	      gtp_printf("alive ");
-      else if (dragon[POS(m, n)].status == DEAD)
-	      gtp_printf("dead ");
-      else
-	      gtp_printf("unknown ");
+      if(dragon[POS(m, n)].id == -1){
+        gtp_printf("unknown ");
+        continue;
+      }
+      switch(dragon2[dragon[POS(m, n)].id].safety){
+        case ALIVE:
+          gtp_printf("alive ");
+          break;
+        case DEAD:
+          gtp_printf("dead ");
+          break;
+        case TACTICALLY_DEAD:
+          gtp_printf("dead ");
+          break;
+        case STRONGLY_ALIVE:
+          gtp_printf("alive ");
+          break;
+        case INVINCIBLE:
+          gtp_printf("invincible ");
+          break;
+        case ALIVE_IN_SEKI:
+          gtp_printf("seki ");
+          break;
+        case CRITICAL:
+          gtp_printf("critical ");
+          break;
+        case INESSENTIAL:
+          gtp_printf("inessential ");
+          break;
+        default:
+          gtp_printf("unknown ");
+          break;
+      }
+    }
+  }
+
+  gtp_printf("\n ");
+
+  // weakness
+  for (m = 0; m < board_size; m++) {
+    for (n = 0; n < board_size; n++) {
+      if(dragon[POS(m, n)].id == -1){
+        gtp_printf("%2.1f ", 0.0);
+        continue;
+      }
+      gtp_printf("%2.1f ", dragon2[dragon[POS(m, n)].id].weakness);
+    }
+  }
+
+  gtp_printf("\n ");
+
+  // moyo
+  for (m = 0; m < board_size; m++) {
+    for (n = 0; n < board_size; n++) {
+      if(dragon[POS(m, n)].id == -1){
+        gtp_printf("%d ", 0);
+        continue;
+      }
+      gtp_printf("%d ", dragon2[dragon[POS(m, n)].id].moyo_size);
     }
   }
   
