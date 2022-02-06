@@ -3852,7 +3852,7 @@ print_goiroinfluence_data(struct influence_data *q, char *what_data)
         gtp_printf("%d ", 0);
         continue;
       }
-      gtp_printf("%d ", dragon2[dragon[POS(m, n)].id].moyo_size);
+      gtp_printf("%2.1f ", dragon2[dragon[POS(m, n)].id].moyo_size*dragon2[dragon[POS(m, n)].id].moyo_territorial_value);
     }
   }
   

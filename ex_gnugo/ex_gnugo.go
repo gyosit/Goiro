@@ -225,7 +225,7 @@ func CapturedStone(hash string) (string, string) {
 	return black, white
 }
 
-func ShowInfluence(hash string, color int, size int) (string, string) {
+func ShowInfluence(hash string, color int, size int) (string, string, string, string) {
 	var s_color string
 	switch color {
 	case 1:
@@ -240,8 +240,10 @@ func ShowInfluence(hash string, color int, size int) (string, string) {
 	//parsed_board := parseBoard2(res[2:3+size])
 	parsed_board := parseBoard_line(res[0])
 	alive_dead := parseBoard_line(res[1])
+	weakness := parseBoard_line(res[2])
+	moyo := parseBoard_line(res[3])
 
-	return parsed_board, alive_dead
+	return parsed_board, alive_dead, weakness, moyo
 }
 
 func EstimateScore(hash string) string {

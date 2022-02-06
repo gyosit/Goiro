@@ -17,9 +17,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"./crypto"
-	"./ex_gnugo"
-	"./secure"
+	"github.com/gyosit/Goiro.git/secure"
+	"github.com/gyosit/Goiro.git/crypto"
+	"github.com/gyosit/Goiro.git/ex_gnugo"
+	"github.com/gyosit/Goiro.git/sessionmanager"
 
 	//"net"
 	//"net/http/fcgi"
@@ -540,6 +541,7 @@ func main() {
 				last = ex_gnugo.CheckTurn(hash, room.Size)
 				sendClient(m, s, "turn:"+last, true, hash_table)
 				sendClient(m, s, "player:"+room.Black+","+room.White, true, hash_table)
+				sendInfluence(m, s, hash, turn[hash], room.Size, hash_table)
 				if best == "tt" {
 					pass[hash]++
 					sendClient(m, s, "pass", true, hash_table)
@@ -656,9 +658,11 @@ func main() {
 			var score string
 			if room.Status == 2 {
 				score = room.Winner
-				board, alive_dead := ex_gnugo.ShowInfluence(hash, 1, room.Size)
+				board, alive_dead, weakness, moyo := ex_gnugo.ShowInfluence(hash, 1, room.Size)
 				sendClient(m, s, "board:"+board, true, hash_table)
 				sendClient(m, s, "alive_dead:"+alive_dead, true, hash_table)
+				sendClient(m, s, "weakness:"+weakness, true, hash_table)
+				sendClient(m, s, "moyo:"+moyo, true, hash_table)
 				sendClient(m, s, "finalscore:"+score, true, hash_table)
 			} else {
 				if turn[hash] == 0 {
@@ -845,10 +849,12 @@ func main() {
 	// 	"/etc/letsencrypt/live/goiro.net/privkey.pem")
 }
 
-func sendInfluence(m, s, hash string, turn int, room_size int, hash_table map[string]string) {
-	board, alive_dead := ex_gnugo.ShowInfluence(hash, turn, room_size)
+func sendInfluence(m *melody.Melody, s *melody.Session, hash string, turn int, room_size int, hash_table map[string]string) {
+	board, alive_dead, weakness, moyo := ex_gnugo.ShowInfluence(hash, turn, room_size)
 	sendClient(m, s, "alive_dead:"+alive_dead, true, hash_table)
 	sendClient(m, s, "board:"+board, true, hash_table)
+	sendClient(m, s, "weakness:"+weakness, true, hash_table)
+	sendClient(m, s, "moyo:"+moyo, true, hash_table)
 	score := ex_gnugo.EstimateScore(hash)
 	sendClient(m, s, "score:"+score, true, hash_table)
 }
