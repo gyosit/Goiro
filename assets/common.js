@@ -455,8 +455,8 @@ var font_style = {font:'Arial', fill:'black'};
 var font_style_home = {font:'Arial', fill:'black', fontSize: 30};
 var font_style_msg = {font:'Arial', fill:'red', fontSize: 30};
 
-// var url = "wss://" + window.location.host + ":1780" + "/connect/" + username+ "/ws";
-var url = "ws://" + window.location.host + "/connect/" + username+ "/ws";
+var url = "wss://" + window.location.host + ":1780" + "/connect/" + username+ "/ws";
+// var url = "ws://" + window.location.host + "/connect/" + username+ "/ws";
 var socket = new WebSocket(url);
 var xhr = new XMLHttpRequest();
 
@@ -896,8 +896,8 @@ function inithome(){
   let backSprit = new PIXI.Sprite(background);
   let graphic_setting = {
     top_margin: 40,
-    menu_margin: 30,
-    menu_btn_h: 140,
+    menu_margin: 20,
+    menu_btn_h: 110,
     middle_margin: 10,
     buttle_btn_h: 140
   }
@@ -929,7 +929,13 @@ function inithome(){
   makeButton2(menu_x*4, graphic_setting["top_margin"], graphic_setting["menu_btn_h"], "message", function(){
     window.location.href = 'message';
   });
-  makeButton2(menu_x*5, graphic_setting["top_margin"], graphic_setting["menu_btn_h"],  "logout", function(){
+  makeButton2(menu_x*5, graphic_setting["top_margin"], graphic_setting["menu_btn_h"], "unity", function(){
+    window.location.href = 'unity';
+  });
+  makeButton2(menu_x*6, graphic_setting["top_margin"], graphic_setting["menu_btn_h"], "opinion", function(){
+    window.location.href = 'https://forms.gle/9rmmDhcfoouRYJHv6';
+  });
+  makeButton2(menu_x*7, graphic_setting["top_margin"], graphic_setting["menu_btn_h"],  "logout", function(){
     username = "";
     window.location.href = 'logout';
   });
@@ -939,7 +945,7 @@ function inithome(){
     `本サイトはまだ試作段階です。
 サーバーダウンやセキュリティ問題等に責任を負えません。
 不具合・要望は作者に連絡いただけると幸いです。`, font_style_home, "text")
-  makeButton2(0, graphic_setting["top_margin"]+graphic_setting["menu_btn_h"]+graphic_setting["middle_margin"], 120, "vshuman", vshuman_f);
+  makeButton2(0, graphic_setting["top_margin"]+graphic_setting["menu_btn_h"]+graphic_setting["middle_margin"], 95, "vshuman", vshuman_f);
   makeButton2(0, graphic_setting["top_margin"]+graphic_setting["menu_btn_h"]+graphic_setting["middle_margin"]*2+graphic_setting["buttle_btn_h"], graphic_setting["menu_btn_h"], "vscom", vscom_f);
   makeButton2(0, graphic_setting["top_margin"]+graphic_setting["menu_btn_h"]+graphic_setting["middle_margin"]*3+graphic_setting["buttle_btn_h"]*2, graphic_setting["menu_btn_h"], "vsfree", vsfree_f);
   
