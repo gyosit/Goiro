@@ -96,6 +96,7 @@ DECLARE(gtp_followup_influence);
 DECLARE(gtp_genmove);
 DECLARE(gtp_genmove_black);
 DECLARE(gtp_genmove_white);
+DECLARE(gtp_scan_values);
 DECLARE(gtp_get_connection_node_counter);
 DECLARE(gtp_get_handicap);
 DECLARE(gtp_get_komi);
@@ -241,6 +242,7 @@ static struct gtp_command commands[] = {
   {"genmove",                 gtp_genmove},
   {"genmove_black",           gtp_genmove_black},
   {"genmove_white",           gtp_genmove_white},
+  {"scan_values",             gtp_scan_values},
   {"get_connection_node_counter", gtp_get_connection_node_counter},
   {"get_handicap",   	      gtp_get_handicap},
   {"get_komi",        	      gtp_get_komi},
@@ -2636,6 +2638,31 @@ gtp_genmove(char *s)
   return gtp_finish_response();
 }
 
+static int
+gtp_scan_values(char *s)
+{
+  int move;
+  int resign;
+  int color;
+  int n;
+
+  n = gtp_decode_color(s, &color);
+  if (!n)
+    return gtp_failure("invalid color");
+
+  if (stackp > 0)
+    return gtp_failure("genmove cannot be called when stackp > 0");
+
+  adjust_level_offset(color);
+  move = genmove(color, NULL, &resign);
+
+  if (resign)
+    return gtp_success("resign");
+
+  print_goiro_all_move_values();
+
+  return gtp_finish_response();
+}
 
 /* Function:  Generate the supposedly best move for either color.
  * Arguments: color to move
@@ -3855,7 +3882,7 @@ print_goiroinfluence_data(struct influence_data *q, char *what_data)
       gtp_printf("%2.1f ", dragon2[dragon[POS(m, n)].id].moyo_size*dragon2[dragon[POS(m, n)].id].moyo_territorial_value);
     }
   }
-  
+
   /* We already have one newline and thus can't use gtp_finish_response(). */
   gtp_printf("\n");
   return GTP_OK;

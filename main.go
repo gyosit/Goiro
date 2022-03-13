@@ -21,6 +21,7 @@ import (
 	"github.com/gyosit/Goiro.git/crypto"
 	"github.com/gyosit/Goiro.git/ex_gnugo"
 	"github.com/gyosit/Goiro.git/sessionmanager"
+	"github.com/gyosit/Goiro.git/ImageProcess"
 
 	//"net"
 	//"net/http/fcgi"
@@ -103,6 +104,7 @@ func main() {
 	count := make(map[string]int)
 	hash_table := make(map[string]string)
 	goiro_level := make(map[string]int)
+	guest_num := 0
 
 	// Session
 	//store := cookie.NewStore([]byte("secret"))
@@ -322,6 +324,12 @@ func main() {
 				ctx.Redirect(302, "/")
 			}
 		}
+	})
+
+	router.GET("/guest_login", func(ctx *gin.Context) {
+		guest_num += 1
+		SessionManager.Login(ctx, "GUEST" + strconv.Itoa(guest_num))
+		ctx.Redirect(302, "/")
 	})
 
 	router.POST("/create_room", func(ctx *gin.Context) {
@@ -658,11 +666,12 @@ func main() {
 			var score string
 			if room.Status == 2 {
 				score = room.Winner
-				board, alive_dead, weakness, moyo := ex_gnugo.ShowInfluence(hash, 1, room.Size)
+				board, alive_dead, weakness, moyo, values := ex_gnugo.ShowInfluence(hash, 1, room.Size)
 				sendClient(m, s, "board:"+board, true, hash_table)
 				sendClient(m, s, "alive_dead:"+alive_dead, true, hash_table)
 				sendClient(m, s, "weakness:"+weakness, true, hash_table)
 				sendClient(m, s, "moyo:"+moyo, true, hash_table)
+				sendClient(m, s, "values:"+values, true, hash_table)
 				sendClient(m, s, "finalscore:"+score, true, hash_table)
 			} else {
 				if turn[hash] == 0 {
@@ -850,11 +859,12 @@ func main() {
 }
 
 func sendInfluence(m *melody.Melody, s *melody.Session, hash string, turn int, room_size int, hash_table map[string]string) {
-	board, alive_dead, weakness, moyo := ex_gnugo.ShowInfluence(hash, turn, room_size)
+	board, alive_dead, weakness, moyo, values := ex_gnugo.ShowInfluence(hash, turn, room_size)
 	sendClient(m, s, "alive_dead:"+alive_dead, true, hash_table)
 	sendClient(m, s, "board:"+board, true, hash_table)
 	sendClient(m, s, "weakness:"+weakness, true, hash_table)
 	sendClient(m, s, "moyo:"+moyo, true, hash_table)
+	sendClient(m, s, "values:"+values, true, hash_table)
 	score := ex_gnugo.EstimateScore(hash)
 	sendClient(m, s, "score:"+score, true, hash_table)
 }
@@ -1281,15 +1291,21 @@ func overrideKifu(hash string) int {
 }
 
 func decode(str, name string) {
-	str = strings.Split(str, ",")[1]
+	// 画像の生成と保存
+	fmt.Println(str)
+	if strings.Index(str, ",") > -1{
+		str = strings.Split(str, ",")[1]
+	}
 	filename := "./assets/thumbnail/" + name + ".png"
 	data, _ := base64.StdEncoding.DecodeString(str) //[]byte
-
 	file, _ := os.Create(filename)
 	defer file.Close()
 	fmt.Printf(filename + "\n")
 	file.Write(data)
 	createTextfile(name)
+
+	// 画像の加工
+	ImageProcess.Trim_rectangle(filename, filename)
 }
 
 func createTextfile(name string) {

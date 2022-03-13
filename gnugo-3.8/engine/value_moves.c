@@ -3344,6 +3344,19 @@ print_all_move_values(FILE *output)
   }
 }
 
+void
+print_goiro_all_move_values()
+{
+  int pos;
+  
+  for (pos = BOARDMIN; pos < BOARDMAX; pos++) {
+    if (!ON_BOARD(pos)){
+      continue;
+    }
+    gtp_printf("%2.1f ", move[pos].final_value);
+  }
+}
+
 /* Search through all board positions for the 10 highest valued
  * moves and print them.
  */

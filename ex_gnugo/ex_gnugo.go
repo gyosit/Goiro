@@ -225,16 +225,11 @@ func CapturedStone(hash string) (string, string) {
 	return black, white
 }
 
-func ShowInfluence(hash string, color int, size int) (string, string, string, string) {
-	var s_color string
-	switch color {
-	case 1:
-		s_color = "black"
-	case -1:
-		s_color = "white"
-	}
+func ShowInfluence(hash string, color int, size int) (string, string, string, string, string) {
+	s_color := map[int]string{1: "black", -1: "white"}
 	cmds := []string{"loadsgf ./assets/kifu/" + hash + ".sgf",
-		"initial_goiroinfluence " + s_color + " influence_regions"}
+		"initial_goiroinfluence " + s_color[color] + " influence_regions",
+		"scan_values " + s_color[color]}
 	cmd := integralCmd(cmds)
 	res := ExecCommand(cmd)
 	//parsed_board := parseBoard2(res[2:3+size])
@@ -242,8 +237,9 @@ func ShowInfluence(hash string, color int, size int) (string, string, string, st
 	alive_dead := parseBoard_line(res[1])
 	weakness := parseBoard_line(res[2])
 	moyo := parseBoard_line(res[3])
+	values := parseBoard_line(res[4])
 
-	return parsed_board, alive_dead, weakness, moyo
+	return parsed_board, alive_dead, weakness, moyo, values
 }
 
 func EstimateScore(hash string) string {

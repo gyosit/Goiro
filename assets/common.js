@@ -24,6 +24,8 @@ var GAME_HEIGHT = 780;
 stage = new PIXI.Container();
 
 var rendererOptions = {
+  width: window.innerWidth/2,
+  height: window.innerHeight/2,
   antialiasing: false,
   transparent: false,
   antialias:true,
@@ -35,7 +37,8 @@ var rendererOptions = {
   
 // Create the canvas in which the game will show, and a
 // generic container for all the graphical objects
-var renderer = PIXI.autoDetectRenderer(window.innerWidth, window.innerHeight, rendererOptions);
+console.log(window.innerWidth);
+var renderer = PIXI.autoDetectRenderer(rendererOptions);
   
 // Put the renderer on screen in the corner
 renderer.view.style.position = "absolute";
@@ -49,6 +52,14 @@ window_h = document.documentElement.clientHeight;
 //document.body.appendChild(app.view);
 document.body.appendChild(renderer.view);
 stage.sortableChildren = true;
+//高画質化対応
+// var myCanvas = document.getElementsByTagName('canvas')[0];
+// myCanvas.width *= devicePixelRatio;
+// myCanvas.height *= devicePixelRatio;
+// myCanvas.style.width =
+//   String(myCanvas.width / devicePixelRatio) + "px";
+// myCanvas.style.height =
+//   String(myCanvas.height / devicePixelRatio) + "px";
 
 var black = "";
 var white = "";
@@ -61,6 +72,10 @@ var link_visible = true;
 let times = 0;
 var review_times = 0;
 var review_index = 0;
+
+// 色情報
+var black_t = 0xdc143c;
+var white_t = 0x87ceeb;
 
 var emerg_msg = "";
 
@@ -503,11 +518,11 @@ socket.onmessage = function(msg){
         y -= 1;
       }
       if(stone_state == 2){
-        var black_t = 0xff1b0f;
-        var white_t = 0x921b96;
+        black_t = 0xf5b1aa;
+        white_t = 0x00a381;
       }else{
-        var black_t = 0xdc143c;
-        var white_t = 0x87ceeb;
+        black_t = 0xdc143c;
+        white_t = 0x87ceeb;
       }
       var black_s = 0x000000;
       var white_s = 0xffffff;
@@ -613,7 +628,8 @@ socket.onmessage = function(msg){
     obj = msg['data'].split(":")[1].split(" ")[0].split("+");
     let size = Math.sqrt(obj.length);
     deleteImage("score");
-    makeText(SIDE+margin, "Good Game!" + msg['data'].split(":")[1].split(" ")[0], font_style, "score");
+    let score = msg['data'].split(":")[1].split(" ")[0];
+    makeText(SIDE+margin, "対局が終了しました！" + score, font_style, "score");
     scene = "home";
     makeButton2(SIDE+margin+10, info_y["button"]*90+250, 90, "backarrow", function(){
       scene = "home";
@@ -631,7 +647,8 @@ socket.onmessage = function(msg){
       xhr = new XMLHttpRequest;       //インスタンス作成
       xhr.onload = function(){        //レスポンスを受け取った時の処理（非同期）
           var res = xhr.responseText.split("\"")[3];
-          window.open("https://twitter.com/share?hashtags=碁色&url=\n"+"https://goiro.net/html/"+res);
+          let message = `黒：${black} vs 白：${white} ${score.replace("+", "＋")}`;
+          window.open(`https://twitter.com/share?text=${message}&hashtags=碁色&url=\nhttps://goiro.net/html/${res}`);
       };
       xhr.onerror = function(){       //エラーが起きた時の処理（非同期）
           alert("error!");
@@ -677,8 +694,8 @@ socket.onmessage = function(msg){
   }case "player":{
     if(scene != "play") return;
     obj = msg['data'].split(":")[1];
-    let black = obj.split(",")[0];
-    let white = obj.split(",")[1];
+    black = obj.split(",")[0];
+    white = obj.split(",")[1];
     deleteImage("player");
     makeText(SIDE+margin, "●"+black+"("+c_b+")"+"　○"+white+"("+c_w+")", font_style, "player");
     break;
@@ -730,7 +747,7 @@ socket.onmessage = function(msg){
 
 //resize();
 window.addEventListener('load', resize, {loop: true});
-window.addEventListener("resize", resize2);
+//window.addEventListener("resize", resize2);
 
 
 
@@ -804,7 +821,7 @@ function initGoban(size){
     line_color = 0x8d6449;
   }else{
     if(stone_state == 2){
-      board_color = 0x807b6c;
+      board_color = 0xa0d8ef;
       line_color = 0x006400;
     }else{
       board_color = 0xf5deb3;
@@ -955,6 +972,13 @@ function inithome(){
 function initLogin(){
   let background = new PIXI.Texture.from("/assets/images/background.png");
   let backSprit = new PIXI.Sprite(background);
+  let graphic_setting = {
+    top_margin: 40,
+    menu_margin: 20,
+    menu_btn_h: 110,
+    middle_margin: 10,
+    buttle_btn_h: 140
+  }
   backSprit.x = 0;
   backSprit.y = 0;
   backSprit.width = GAME_WIDTH;
@@ -967,6 +991,9 @@ function initLogin(){
   });
   makeButton2(0, 250, 100, "login", function(){
     window.location.href = 'login';
+  });
+  makeButton2(0, 350, 100, "trial", function(){
+    window.location.href = 'guest_login';
   });
   putText(0, graphic_setting["top_margin"]+graphic_setting["menu_btn_h"]+graphic_setting["middle_margin"]*4+graphic_setting["buttle_btn_h"]*3-10, 
   emerg_msg, font_style_msg, "text")
@@ -1092,9 +1119,9 @@ function makeImage(x, y, color, type, alpha, size, board_size){
   case "stone":
     if(stone_state == 2){
       if(color == 0x000000){
-        putImage(x, y, "pumpkin", type, height=ds, width=ds, alpha=0.9);
+        putImage(x, y, "sakura", type, height=ds, width=ds, alpha=0.9);
       }else{
-        putImage(x, y, "ghost", type, height=ds, width=ds, alpha=0.9);
+        putImage(x, y, "mejiro", type, height=ds, width=ds, alpha=0.9);
       }
     }else{
       if(color == 0x000000){
@@ -1623,20 +1650,18 @@ function makeScorebar(score) {
   let X, Y;
   X = SIDE + margin;
   Y = 200;
-  let w_ter = 0x87ceeb;
-  let b_ter = 0xdc143c;
   let left = X;
   let r = 100;
   let base_len = (GAME_WIDTH - left)/2;
   let b_len = Math.min(Math.PI, Math.max(-1*Math.PI, Math.PI*score/20));
   let w_len = Math.min(Math.PI, Math.max(-1*Math.PI, Math.PI*-1*score/20));
   var w_bar = new PIXI.Graphics()
-    .beginFill(w_ter)
+    .beginFill(white_t)
     .arc(left+r, Y+r, r, 3/2*Math.PI, -3/2*Math.PI-w_len, false)
     .lineTo(left+r, Y+r)
     .endFill();
   var b_bar = new PIXI.Graphics()
-    .beginFill(b_ter)
+    .beginFill(black_t)
     .arc(left+r, Y+r, r, -1/2*Math.PI, 1/2*Math.PI+b_len, false)
     .lineTo(left+r, Y+r)
     .endFill();
@@ -1651,18 +1676,20 @@ function resize(loop=false) {
   deleteImage("all");
   window_w = document.documentElement.clientWidth;
   window_h = document.documentElement.clientHeight;
+
   // Determine which screen dimension is most constrained
   ratio = Math.min(window_w/GAME_WIDTH,
-                  window_h/GAME_HEIGHT);
+    window_h/GAME_HEIGHT);
   console.log(window.innerWidth);
   console.log(window.innerHeight);
   console.log(GAME_WIDTH);
   console.log(GAME_HEIGHT);
   console.log(ratio);
-  if(ratio < 0.3){
-    ratio = Math.max(window_w/GAME_WIDTH,
-      window_h/GAME_HEIGHT);
-  }
+  // if(ratio < 0.3){
+  //   ratio = Math.max(window_w/GAME_WIDTH,
+  //   window_h/GAME_HEIGHT);
+  // }
+  console.log(ratio);
 
   // Scale the view stageropriately to fill that dimension
   stage.scale.x = stage.scale.y = ratio;
@@ -1687,7 +1714,9 @@ function resize(loop=false) {
       initReview();
       break;
   }
+
   renderer.render(stage);
+
   const _sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
   (async () => {
     await _sleep(500);
@@ -1698,6 +1727,7 @@ function resize(loop=false) {
 }
 
 function resize2(){
+  console.log("Resize2");
   window_w = document.documentElement.clientWidth;
   window_h = document.documentElement.clientHeight;
   // Determine which screen dimension is most constrained
@@ -1733,5 +1763,16 @@ function resize2(){
       socket.send("show");
       break;
   }
+
+  
   renderer.render(stage);
+
+  // 高画質化対応
+  var myCanvas = document.getElementsByTagName('canvas')[0];
+  myCanvas.width *= devicePixelRatio;
+  myCanvas.height *= devicePixelRatio;
+  myCanvas.style.width =
+    String(myCanvas.width / devicePixelRatio) + "px";
+  myCanvas.style.height =
+    String(myCanvas.height / devicePixelRatio) + "px";
 }
