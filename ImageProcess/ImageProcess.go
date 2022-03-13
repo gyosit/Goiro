@@ -2,8 +2,11 @@ package ImageProcess
 
 import(
 	"fmt"
+	"math"
 	"os"
+	"os/exec"
 	"github.com/disintegration/imaging"
+	"github.com/nfnt/resize"
 )
 
 func Trim_rectangle(srcPath string, outPath string) error{
@@ -34,14 +37,17 @@ func Trim_rectangle(srcPath string, outPath string) error{
 	/*-----------*/
 
 	// modify image
-	out := imaging.CropAnchor(src, size, size, imaging.Left) // resize
+	out := imaging.CropAnchor(src, int(math.Round(float64(size)*1.91)), size, imaging.Left) // resize
+	resizedImg := resize.Resize(0, 418, out, resize.NearestNeighbor)
 
 	/*-----------*/
 
 	// save image
-	if err := imaging.Save(out, outPath); err != nil {
+	if err := imaging.Save(resizedImg, outPath); err != nil {
 		return err
 	}
+	cmd := "python3 other/cutting.py " + outPath + " " + outPath
+	exec.Command("sh", "-c", cmd).Output()
 
 	/*-----------*/
 
