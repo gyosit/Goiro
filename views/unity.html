@@ -6,7 +6,6 @@
     <title>Unity WebGL Player | Goiro</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
-    
   </head>
   <body>
     <div id="unity-container" class="unity-desktop">
@@ -64,11 +63,11 @@
       }
 
       var buildUrl = "Build";
-      var loaderUrl = buildUrl + "/goiro.loader.js";
+      var loaderUrl = buildUrl + "/goiro_2.loader.js";
       var config = {
-        dataUrl: buildUrl + "/goiro.data",
-        frameworkUrl: buildUrl + "/goiro.framework.js",
-        codeUrl: buildUrl + "/goiro.wasm",
+        dataUrl: buildUrl + "/goiro_2.data",
+        frameworkUrl: buildUrl + "/goiro_2.framework.js",
+        codeUrl: buildUrl + "/goiro_2.wasm",
         streamingAssetsUrl: "StreamingAssets",
         companyName: "Goiro",
         productName: "Goiro",
@@ -111,6 +110,5 @@
       };
       document.body.appendChild(script);
     </script>
-    <script type="text/javascript" src="/assets/windowResize.js"></script>
   </body>
 </html>
