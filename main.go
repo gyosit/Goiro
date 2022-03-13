@@ -39,6 +39,7 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-contrib/cors"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"gopkg.in/olahol/melody.v1"
@@ -92,6 +93,19 @@ func main() {
 	m := melody.New()
 	//"l, _ := net.Listen("tcp", ":1780")
 	//"fcgi.Serve(l, router)
+	// CORS 対応
+    config := cors.DefaultConfig()
+    config.AllowOrigins = []string{"https://goiro.net", "https://goiro.net:1780"}
+	config.AllowMethods = []string{"POST", "GET"}
+	config.AllowHeaders =  []string{
+        "Access-Control-Allow-Credentials",
+        "Access-Control-Allow-Headers",
+        "Content-Type",
+        "Content-Length",
+        "Accept-Encoding",
+        "Authorization",
+    }
+    router.Use(cors.New(config))
 
 	store := cookie.NewStore([]byte("secret"))
 	router.Use(sessions.Sessions("mysession", store))
