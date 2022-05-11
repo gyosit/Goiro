@@ -125,7 +125,10 @@ func main() {
 	//router.Use(sessions.Sessions("mysession", store))
 
 	router.LoadHTMLGlob("views/*.html")
+	//router.LoadHTMLGlob("views/black_jack/*.html")
 	router.Static("/assets", "./assets")
+	router.Static("/black_jack_src", "./views/black_jack/")
+	router.Static("/black_jack_src_sprites", "./views/black_jack/sprites")
 	router.Static("/TemplateData", "./views/TemplateData")
 	router.Static("/Build", "./views/Build")
 
@@ -344,6 +347,10 @@ func main() {
 		guest_num += 1
 		SessionManager.Login(ctx, "GUEST" + strconv.Itoa(guest_num))
 		ctx.Redirect(302, "/")
+	})
+
+	router.GET("/black_jack", func(ctx *gin.Context){
+		ctx.HTML(200, "main.html", gin.H{})
 	})
 
 	router.POST("/create_room", func(ctx *gin.Context) {
@@ -866,10 +873,10 @@ func main() {
 		sendClient(m, s, "turn:"+last, true, hash_table)*/
 	})
 
-	// router.Run(":1780")
-	router.RunTLS(":1780",
-		"/etc/letsencrypt/live/goiro.net/fullchain.pem",
-		"/etc/letsencrypt/live/goiro.net/privkey.pem")
+	router.Run(":1780")
+	// router.RunTLS(":1780",
+	// 	"/etc/letsencrypt/live/goiro.net/fullchain.pem",
+	// 	"/etc/letsencrypt/live/goiro.net/privkey.pem")
 }
 
 func sendInfluence(m *melody.Melody, s *melody.Session, hash string, turn int, room_size int, hash_table map[string]string) {

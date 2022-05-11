@@ -22,6 +22,10 @@ var GAME_WIDTH = 1100;
 var GAME_HEIGHT = 780;
 
 stage = new PIXI.Container();
+influence = new PIXI.Container();
+const blurFilter = new PIXI.filters.BlurFilter(strength=16);
+influence.filters = [blurFilter];
+stage.addChildAt(influence, 0);
 
 var rendererOptions = {
   width: window.innerWidth/2,
@@ -470,8 +474,8 @@ var font_style = {font:'Arial', fill:'black'};
 var font_style_home = {font:'Arial', fill:'black', fontSize: 30};
 var font_style_msg = {font:'Arial', fill:'red', fontSize: 30};
 
-var url = "wss://" + window.location.host + ":1780" + "/connect/" + username+ "/ws";
-// var url = "ws://" + window.location.host + "/connect/" + username+ "/ws";
+// var url = "wss://" + window.location.host + ":1780" + "/connect/" + username+ "/ws";
+var url = "ws://" + window.location.host + "/connect/" + username+ "/ws";
 var socket = new WebSocket(url);
 var xhr = new XMLHttpRequest();
 
@@ -484,6 +488,7 @@ socket.addEventListener("close", function(event){
 socket.onmessage = function(msg){
   var obj = "";
   let i = 1, x = 0, y = 0;
+  const startTime = performance.now();
 
   switch(msg['data'].split(":")[0]){
   case "connected":
@@ -532,25 +537,25 @@ socket.onmessage = function(msg){
           makeImage(x, y, black_s, "stone", 1, SIDE, board_size);
           break;
         case "-3":
-          makeImage(x, y, black_t, "territory", 0.7, SIDE, board_size);
+          makeImage(x, y, black_t, "territory", 0.8, SIDE, board_size);
           break;
         case "-2":
-          makeImage(x, y, black_t, "territory", 0.2, SIDE, board_size);
+          makeImage(x, y, black_t, "territory", 0.5, SIDE, board_size);
           break;
         case "-1":
-          makeImage(x, y, black_t, "territory", 0.1, SIDE, board_size);
+          makeImage(x, y, black_t, "territory", 0.2, SIDE, board_size);
           break;
         case "4":
           makeImage(x, y, white_s, "stone", 1, SIDE, board_size);
           break;
         case "3":
-          makeImage(x, y, white_t, "territory", 0.7, SIDE, board_size);
+          makeImage(x, y, white_t, "territory", 0.8, SIDE, board_size);
           break;
         case "2":
-          makeImage(x, y, white_t, "territory", 0.2, SIDE, board_size);
+          makeImage(x, y, white_t, "territory", 0.5, SIDE, board_size);
           break;
         case "1":
-          makeImage(x, y, white_t, "territory", 0.1, SIDE, board_size);
+          makeImage(x, y, white_t, "territory", 0.2, SIDE, board_size);
           break;
         default:
           break;
@@ -743,6 +748,9 @@ socket.onmessage = function(msg){
     }
   }
   renderer.render(stage);
+
+  const endTime = performance.now();
+  console.log(`${msg['data'].split(":")[0]}:${endTime - startTime} ms`);
 }
 
 //resize();
@@ -1100,8 +1108,6 @@ function makeImage(x, y, color, type, alpha, size, board_size){
         x-ds, y+ds,
       ])
       .endFill();
-    let blurFilter = new PIXI.filters.BlurFilter(strength=32);
-    material.filters = [blurFilter];
     // squid
     // if(true){
     //   break;
@@ -1358,7 +1364,11 @@ function makeImage(x, y, color, type, alpha, size, board_size){
     if(type == "link1" || type == "link2"){
       material.zIndex = 2;
     }
-    stage.addChild(material);
+    if(type == "territory"){
+      influence.addChild(material);
+    }else{
+      stage.addChild(material);
+    }
     texture[type].push(material);
   }
   if(type.indexOf("link") != -1 && type != "link1" && type != "link2" && type != "link3" && type != "link4"){
@@ -1566,12 +1576,14 @@ function deleteImage(type){
     Object.keys(texture).forEach(v => {
       texture[v].forEach(vv => {
         stage.removeChild(vv);
+        influence.removeChild(vv);
       })
       texture[v].splice(0);
     })
   }else{
     texture[type].forEach(v => {
       stage.removeChild(v);
+      influence.removeChild(v);
     })
     texture[type].splice(0);
   }
@@ -1624,7 +1636,7 @@ function deletelinks(){
   let i = 0;
   links.forEach(v1 => {
     links.slice(i+1).forEach(v2 => {
-      over = overLink(v1, v2);
+      //over = overLink(v1, v2);
       if(over){
         texture[v1[4]][v1[5]].visible = false;
         texture[v2[4]][v2[5]].visible = false;
