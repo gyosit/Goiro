@@ -474,8 +474,8 @@ var font_style = {font:'Arial', fill:'black'};
 var font_style_home = {font:'Arial', fill:'black', fontSize: 30};
 var font_style_msg = {font:'Arial', fill:'red', fontSize: 30};
 
-// var url = "wss://" + window.location.host + ":1780" + "/connect/" + username+ "/ws";
-var url = "ws://" + window.location.host + "/connect/" + username+ "/ws";
+var url = "wss://" + window.location.host + ":1780" + "/connect/" + username+ "/ws";
+// var url = "ws://" + window.location.host + "/connect/" + username+ "/ws";
 var socket = new WebSocket(url);
 var xhr = new XMLHttpRequest();
 
@@ -750,7 +750,7 @@ socket.onmessage = function(msg){
   renderer.render(stage);
 
   const endTime = performance.now();
-  console.log(`${msg['data'].split(":")[0]}:${endTime - startTime} ms`);
+  //console.log(`${msg['data'].split(":")[0]}:${endTime - startTime} ms`);
 }
 
 //resize();
